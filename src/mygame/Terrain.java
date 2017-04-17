@@ -45,9 +45,8 @@ public class Terrain extends SimpleApplication
   private Vector3f camLeft = new Vector3f();
 
   public static void main(String[] args) {
-    Terrain app = new Terrain();
-    
-    app.start();
+      Terrain app = new Terrain();
+      app.start();
   }
 
   @Override
@@ -165,11 +164,13 @@ public class Terrain extends SimpleApplication
     inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
     inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));
     inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
+    inputManager.addMapping("Camera", new KeyTrigger(KeyInput.KEY_P));
     inputManager.addListener(this, "Left");
     inputManager.addListener(this, "Right");
     inputManager.addListener(this, "Up");
     inputManager.addListener(this, "Down");
     inputManager.addListener(this, "Jump");
+    inputManager.addListener(this, "Camera");
   
   }
 
