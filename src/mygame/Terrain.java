@@ -21,6 +21,9 @@ import com.jme3.texture.Texture.WrapMode;
 import java.io.IOException;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.math.ColorRGBA;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.FogFilter;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import java.util.Random;
@@ -43,6 +46,8 @@ public class Terrain extends SimpleApplication
   private boolean left = false, right = false, up = false, down = false;
   private Vector3f camDir = new Vector3f();
   private Vector3f camLeft = new Vector3f();
+  private FilterPostProcessor fpp;
+  private FogFilter fogFilter;
 
   public static void main(String[] args) {
       Terrain app = new Terrain();
@@ -54,14 +59,14 @@ public class Terrain extends SimpleApplication
     bulletAppState = new BulletAppState();
     stateManager.attach(bulletAppState); 
     setUpKeys();
-
+    
     //Create player with his physics
     CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(2f, 6f, 1);
     player = new CharacterControl(capsuleShape, 0.05f);
     player.setJumpSpeed(20);
     player.setFallSpeed(30);
     player.setGravity(30);
-    player.setPhysicsLocation(new Vector3f(0, 10, 0));    
+    player.setPhysicsLocation(new Vector3f(0, 10, 0));
     flyCam.setMoveSpeed(50);
     
     //Generate the Maze
@@ -73,8 +78,7 @@ public class Terrain extends SimpleApplication
     }
 
     /** 1. Create terrain material and load four textures into it. */
-    mat_terrain = new Material(assetManager,
-            "Common/MatDefs/Terrain/Terrain.j3md");
+    mat_terrain = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
 
     /** 1.1) Add ALPHA map (for red-blue-green coded splat textures) */
     mat_terrain.setTexture("Alpha", assetManager.loadTexture(
@@ -85,21 +89,26 @@ public class Terrain extends SimpleApplication
             "Textures/Terrain/splat/grass.jpg");
     grass.setWrap(WrapMode.Repeat);
     mat_terrain.setTexture("Tex1", grass);
-    mat_terrain.setFloat("Tex1Scale", 64f);
-
-    /** 1.3) Add DIRT texture into the green layer (Tex2) */
-    Texture dirt = assetManager.loadTexture(
-            "Textures/Terrain/splat/dirt.jpg");
-    dirt.setWrap(WrapMode.Repeat);
-    mat_terrain.setTexture("Tex2", dirt);
-    mat_terrain.setFloat("Tex2Scale", 32f);
-
-    /** 1.4) Add ROAD texture into the blue layer (Tex3) */
-    Texture rock = assetManager.loadTexture(
-            "Textures/Terrain/splat/road.jpg");
-    rock.setWrap(WrapMode.Repeat);
-    mat_terrain.setTexture("Tex3", rock);
+    mat_terrain.setFloat("Tex1Scale", 128f);
+    mat_terrain.setTexture("Tex2", grass);
+    mat_terrain.setFloat("Tex2Scale", 64f);
+    mat_terrain.setTexture("Tex3", grass);
     mat_terrain.setFloat("Tex3Scale", 128f);
+    
+
+//    /** 1.3) Add DIRT texture into the green layer (Tex2) */
+//    Texture dirt = assetManager.loadTexture(
+//            "Textures/Terrain/splat/dirt.jpg");
+//    dirt.setWrap(WrapMode.Repeat);
+//    mat_terrain.setTexture("Tex2", dirt);
+//    mat_terrain.setFloat("Tex2Scale", 16f);
+
+//    /** 1.4) Add ROAD texture into the blue layer (Tex3) */
+//    Texture rock = assetManager.loadTexture(
+//            "Textures/Terrain/splat/road.jpg");
+//    rock.setWrap(WrapMode.Repeat);
+//    mat_terrain.setTexture("Tex3", grass);
+//    mat_terrain.setFloat("Tex3Scale", 128f);
 
      /** 2. Create the height map */
     AbstractHeightMap heightmap = null;
@@ -135,29 +144,49 @@ public class Terrain extends SimpleApplication
     bulletAppState.getPhysicsSpace().add(landscape);
     bulletAppState.getPhysicsSpace().add(player);
     
-    for(int i=0;i<1000;i++){
+    for(int i=0;i<200;i++){
         CreateTree();
     }
     // You must add a light to make the model visible
     DirectionalLight sun = new DirectionalLight();
     sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f));
     rootNode.addLight(sun);
+    
+    CreateFog();
   }
   
   protected void CreateTree(){
       //creating a tree
     Random rand = new Random();
     Spatial treeGeo = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
-    treeGeo.scale(rand.nextInt(5)+2); // make tree bigger
+    treeGeo.scale(rand.nextInt(5)+3); // make tree bigger
     treeGeo.setQueueBucket(Bucket.Transparent); // transparent leaves
     treeGeo.rotate(0,rand.nextInt(360),0);
     rootNode.attachChild(treeGeo);
-    Vector3f treeLoc = new Vector3f(-1*rand.nextInt(1000)+500,0,-1*rand.nextInt(1000)+500);
-    //treeLoc.setY( terrain.getLocalTranslation().getY() );
+
+    Vector3f treeLoc = new Vector3f(0,0,0);
+    treeLoc.set(-1*rand.nextInt(1000)+500,0,-1*rand.nextInt(1000)+500);
     treeLoc.setY(terrain.getHeight(new Vector2f( treeLoc.x, treeLoc.z ) ) -100);
-    treeGeo.setLocalTranslation(treeLoc);
-    
+    if(treeLoc.y<0){
+        treeGeo.setLocalTranslation(treeLoc);
+    }
+
+   bulletAppState.getPhysicsSpace().add(treeGeo);
   }
+  
+  protected void CreateFog(){
+    fpp = new FilterPostProcessor(assetManager);
+    viewPort.addProcessor(fpp);
+    //Initialize the FogFilter and
+    //add it to the FilterPostProcesor.
+    fogFilter = new FogFilter();
+    fogFilter.setFogColor(new ColorRGBA(0.8f, 0.7f, 0.6f, 0.9f));
+    fogFilter.setFogDistance(110);
+    fogFilter.setFogDensity(1.4f);
+    fpp.addFilter(fogFilter);
+}
+  
+  
   private void setUpKeys() {
     inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
     inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
