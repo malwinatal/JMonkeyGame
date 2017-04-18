@@ -63,10 +63,10 @@ public class Terrain extends SimpleApplication
     //Create player with his physics
     CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(2f, 6f, 1);
     player = new CharacterControl(capsuleShape, 0.05f);
-    player.setJumpSpeed(20);
+    player.setJumpSpeed(30);
     player.setFallSpeed(30);
     player.setGravity(30);
-    player.setPhysicsLocation(new Vector3f(0, 10, 0));
+    player.setPhysicsLocation(new Vector3f(0, -100,0));
     flyCam.setMoveSpeed(50);
     
     //Generate the Maze
@@ -126,11 +126,11 @@ public class Terrain extends SimpleApplication
      * 3.5) We supply the prepared heightmap itself.
      */
     int patchSize = 65;
-    terrain = new TerrainQuad("my terrain", patchSize, 513, heightmap.getHeightMap());
+    terrain = new TerrainQuad("my terrain", patchSize, 1025, heightmap.getHeightMap());
 
     /** 4. We give the terrain its material, position & scale it, and attach it. */
     terrain.setMaterial(mat_terrain);
-    terrain.setLocalTranslation(0, -100, 0);
+    terrain.setLocalTranslation(0, -300, 0);
     terrain.setLocalScale(2f, 1f, 2f);
     rootNode.attachChild(terrain);
 
@@ -159,17 +159,21 @@ public class Terrain extends SimpleApplication
       //creating a tree
     Random rand = new Random();
     Spatial treeGeo = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
-    treeGeo.scale(rand.nextInt(5)+3); // make tree bigger
+    treeGeo.scale(rand.nextInt(5)+5); // make tree bigger
     treeGeo.setQueueBucket(Bucket.Transparent); // transparent leaves
     treeGeo.rotate(0,rand.nextInt(360),0);
     rootNode.attachChild(treeGeo);
 
     Vector3f treeLoc = new Vector3f(0,0,0);
-    treeLoc.set(-1*rand.nextInt(1000)+500,0,-1*rand.nextInt(1000)+500);
-    treeLoc.setY(terrain.getHeight(new Vector2f( treeLoc.x, treeLoc.z ) ) -100);
-    if(treeLoc.y<0){
-        treeGeo.setLocalTranslation(treeLoc);
+
+    do{
+        treeLoc.set(-1*rand.nextInt(1000)+500,0,-1*rand.nextInt(1000)+500);
+        treeLoc.setY(terrain.getHeight(new Vector2f( treeLoc.x, treeLoc.z ) ) -300);
+        break;
     }
+    while(treeLoc.y<-280);
+    
+    treeGeo.setLocalTranslation(treeLoc);
 
    bulletAppState.getPhysicsSpace().add(treeGeo);
   }
