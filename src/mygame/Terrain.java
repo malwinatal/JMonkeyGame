@@ -21,6 +21,7 @@ import com.jme3.texture.Texture.WrapMode;
 import java.io.IOException;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.PointLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FogFilter;
@@ -43,11 +44,13 @@ public class Terrain extends SimpleApplication
   private RigidBodyControl landscape;
   private CharacterControl player;
   private Vector3f walkDirection = new Vector3f();
-  private boolean left = false, right = false, up = false, down = false;
+  private boolean left = false, right = false, up = false, down = false, pause = false, gamebreak=false, returnk = false;
   private Vector3f camDir = new Vector3f();
   private Vector3f camLeft = new Vector3f();
   private FilterPostProcessor fpp;
   private FogFilter fogFilter;
+  private PointLight lighter;
+  private DirectionalLight sun = new DirectionalLight();
 
   public static void main(String[] args) {
       Terrain app = new Terrain();
@@ -61,96 +64,36 @@ public class Terrain extends SimpleApplication
     setUpKeys();
     
     //Create player with his physics
-    CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(2f, 6f, 1);
+    CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.3f, 1.5f, 1);
+    cam.setFrustumNear(0.5f);
     player = new CharacterControl(capsuleShape, 0.05f);
-    player.setJumpSpeed(30);
+    player.setJumpSpeed(20);
     player.setFallSpeed(30);
     player.setGravity(30);
-    player.setPhysicsLocation(new Vector3f(0, -100,0));
-    flyCam.setMoveSpeed(50);
+    player.setPhysicsLocation(new Vector3f(27, 5, 24));
+    flyCam.setMoveSpeed(10);
+    //flyCam.setLocation(new Vector3f(1,1,1));
+    //flyCam.setLocation();
     
     //Generate the Maze
-    Maze labirynt = new Maze(10,10);
+    Maze labirynt = new Maze(10,10, assetManager, rootNode, bulletAppState);
     try {
         labirynt.generateMaze();
     } catch (IOException ex) {
         Logger.getLogger(Terrain.class.getName()).log(Level.SEVERE, null, ex);
     }
-
-    /** 1. Create terrain material and load four textures into it. */
-    mat_terrain = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
-
-    /** 1.1) Add ALPHA map (for red-blue-green coded splat textures) */
-    mat_terrain.setTexture("Alpha", assetManager.loadTexture(
-            "Textures/Terrain/splat/alphamap.png"));
-
-    /** 1.2) Add GRASS texture into the red layer (Tex1). */
-    Texture grass = assetManager.loadTexture(
-            "Textures/Terrain/splat/grass.jpg");
-    grass.setWrap(WrapMode.Repeat);
-    mat_terrain.setTexture("Tex1", grass);
-    mat_terrain.setFloat("Tex1Scale", 128f);
-    mat_terrain.setTexture("Tex2", grass);
-    mat_terrain.setFloat("Tex2Scale", 64f);
-    mat_terrain.setTexture("Tex3", grass);
-    mat_terrain.setFloat("Tex3Scale", 128f);
     
-
-//    /** 1.3) Add DIRT texture into the green layer (Tex2) */
-//    Texture dirt = assetManager.loadTexture(
-//            "Textures/Terrain/splat/dirt.jpg");
-//    dirt.setWrap(WrapMode.Repeat);
-//    mat_terrain.setTexture("Tex2", dirt);
-//    mat_terrain.setFloat("Tex2Scale", 16f);
-
-//    /** 1.4) Add ROAD texture into the blue layer (Tex3) */
-//    Texture rock = assetManager.loadTexture(
-//            "Textures/Terrain/splat/road.jpg");
-//    rock.setWrap(WrapMode.Repeat);
-//    mat_terrain.setTexture("Tex3", grass);
-//    mat_terrain.setFloat("Tex3Scale", 128f);
-
-     /** 2. Create the height map */
-    AbstractHeightMap heightmap = null;
-    Texture heightMapImage = assetManager.loadTexture(
-            "Textures/test.png");
-    heightmap = new ImageBasedHeightMap(heightMapImage.getImage());
-    heightmap.load();
-
-    /** 3. We have prepared material and heightmap.
-     * Now we create the actual terrain:
-     * 3.1) Create a TerrainQuad and name it "my terrain".
-     * 3.2) A good value for terrain tiles is 64x64 -- so we supply 64+1=65.
-     * 3.3) We prepared a heightmap of size 512x512 -- so we supply 512+1=513.
-     * 3.4) As LOD step scale we supply Vector3f(1,1,1).
-     * 3.5) We supply the prepared heightmap itself.
-     */
-    int patchSize = 65;
-    terrain = new TerrainQuad("my terrain", patchSize, 1025, heightmap.getHeightMap());
-
-    /** 4. We give the terrain its material, position & scale it, and attach it. */
-    terrain.setMaterial(mat_terrain);
-    terrain.setLocalTranslation(0, -300, 0);
-    terrain.setLocalScale(2f, 1f, 2f);
-    rootNode.attachChild(terrain);
-
-    /** 5. The LOD (level of detail) depends on were the camera is: */
-    TerrainLodControl control = new TerrainLodControl(terrain, getCamera());
-    CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(terrain);
-    landscape = new RigidBodyControl(sceneShape, 0);
-    terrain.addControl(control);
-    terrain.addControl(landscape);
-    
-    bulletAppState.getPhysicsSpace().add(landscape);
     bulletAppState.getPhysicsSpace().add(player);
     
-    for(int i=0;i<200;i++){
-        CreateTree();
-    }
-    // You must add a light to make the model visible
-    DirectionalLight sun = new DirectionalLight();
-    sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f));
-    rootNode.addLight(sun);
+    //for(int i=0;i<20;i++){
+    //    CreateTree();
+    //}
+     //You must add a light to make the model visible
+     
+     sun.setDirection(new Vector3f(0f, -5f, 0));
+     lighter = new PointLight(new Vector3f(27,1,24),15);
+     
+     rootNode.addLight(lighter);
     
     CreateFog();
   }
@@ -159,21 +102,26 @@ public class Terrain extends SimpleApplication
       //creating a tree
     Random rand = new Random();
     Spatial treeGeo = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
-    treeGeo.scale(rand.nextInt(5)+5); // make tree bigger
+    treeGeo.scale(rand.nextInt(5)+3); // make tree bigger
     treeGeo.setQueueBucket(Bucket.Transparent); // transparent leaves
     treeGeo.rotate(0,rand.nextInt(360),0);
     rootNode.attachChild(treeGeo);
 
     Vector3f treeLoc = new Vector3f(0,0,0);
-
-    do{
-        treeLoc.set(-1*rand.nextInt(1000)+500,0,-1*rand.nextInt(1000)+500);
-        treeLoc.setY(terrain.getHeight(new Vector2f( treeLoc.x, treeLoc.z ) ) -300);
-        break;
-    }
-    while(treeLoc.y<-280);
+    treeLoc.set(-1*rand.nextInt(1000)+500,0,-1*rand.nextInt(1000)+500);
+    treeLoc.setY(terrain.getHeight(new Vector2f( treeLoc.x, treeLoc.z ) ) -100);
     
-    treeGeo.setLocalTranslation(treeLoc);
+   // TerrainLodControl treecontrol = new TerrainLodControl(treeGeo, getCamera());
+
+    
+    if(treeLoc.y<0){
+        treeGeo.setLocalTranslation(treeLoc);
+    }
+    
+    CollisionShape treeShape = CollisionShapeFactory.createMeshShape(treeGeo);
+    RigidBodyControl trees = new RigidBodyControl(treeShape, 0);
+    //terrain.addControl(control);
+    treeGeo.addControl(trees);
 
    bulletAppState.getPhysicsSpace().add(treeGeo);
   }
@@ -184,9 +132,14 @@ public class Terrain extends SimpleApplication
     //Initialize the FogFilter and
     //add it to the FilterPostProcesor.
     fogFilter = new FogFilter();
-    fogFilter.setFogColor(new ColorRGBA(0.8f, 0.7f, 0.6f, 0.9f));
-    fogFilter.setFogDistance(110);
-    fogFilter.setFogDensity(1.4f);
+    //fogFilter.setFogColor(new ColorRGBA(1, 0, 0, 1));
+    fogFilter.setFogColor(new ColorRGBA(0.05f, 0.05f, 0.05f, 0.05f));
+
+    fogFilter.setFogDistance(50);
+    fogFilter.setFogDensity(4.4f);
+    
+    
+    
     fpp.addFilter(fogFilter);
 }
   
@@ -197,13 +150,15 @@ public class Terrain extends SimpleApplication
     inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
     inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));
     inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
-    inputManager.addMapping("Camera", new KeyTrigger(KeyInput.KEY_P));
+    inputManager.addMapping("Pause", new KeyTrigger(KeyInput.KEY_P));
+    inputManager.addMapping("Return", new KeyTrigger(KeyInput.KEY_R));
     inputManager.addListener(this, "Left");
     inputManager.addListener(this, "Right");
     inputManager.addListener(this, "Up");
     inputManager.addListener(this, "Down");
     inputManager.addListener(this, "Jump");
-    inputManager.addListener(this, "Camera");
+    inputManager.addListener(this, "Pause");
+    inputManager.addListener(this, "Return");
   
   }
 
@@ -220,14 +175,23 @@ public class Terrain extends SimpleApplication
       down = isPressed;
     } else if (binding.equals("Jump")) {
       if (isPressed) { player.jump(); }
+    } else if (binding.equals("Pause")){
+      pause = isPressed;
+    }
+    else if (binding.equals("Return")){
+      returnk = isPressed;
     }
   }
 
 @Override
     public void simpleUpdate(float tpf) {
-        camDir.set(cam.getDirection()).multLocal(0.6f);
-        camLeft.set(cam.getLeft()).multLocal(0.4f);
+        
+        if(!gamebreak){
+        camDir.set(cam.getDirection()).multLocal(0.075f);
+        camLeft.set(cam.getLeft()).multLocal(0.05f);
         walkDirection.set(0, 0, 0);
+        
+        
         if (left) {
             walkDirection.addLocal(camLeft);
         }
@@ -240,7 +204,40 @@ public class Terrain extends SimpleApplication
         if (down) {
             walkDirection.addLocal(camDir.negate());
         }
+        
         player.setWalkDirection(walkDirection);
         cam.setLocation(player.getPhysicsLocation());
+        Vector3f loc = player.getPhysicsLocation();
+        lighter.setPosition(new Vector3f(loc.x, loc.y, loc.z));
+        
+        if (pause) {
+            //bulletAppState.getPhysicsSpace().remove(player);
+            gamebreak=true;
+
+                rootNode.addLight(sun);
+                fogFilter.setFogDistance(500);
+                fogFilter.setFogDensity(0.4f);
+                cam.setLocation(new Vector3f(0,7,0));
+                
+        }
+
+        }
+        
+        else
+        {
+            if (returnk)
+            {
+                gamebreak=false;
+                fogFilter.setFogDistance(50);
+                fogFilter.setFogDensity(4.4f);
+                rootNode.removeLight(sun);
+                
+
+                
+                
+            }
+        }
+        
+        //System.out.println(gamebreak);
     }
 }
