@@ -14,6 +14,7 @@ import com.jme3.light.PointLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FogFilter;
+import com.jme3.util.SkyFactory;
 import jsproject.Map;
 
 
@@ -27,7 +28,7 @@ public class Game extends SimpleApplication
   private CharacterControl player;
   private Vector3f walkDirection = new Vector3f();
   private boolean left = false, right = false, up = false, down = false, 
-                  pause = false, gamebreak=false, returnk = false, isRunning = true;
+                  pause = false, gamebreak=false;
   private Vector3f camDir = new Vector3f();
   private Vector3f camLeft = new Vector3f();
   private FilterPostProcessor fpp;
@@ -42,6 +43,7 @@ public class Game extends SimpleApplication
   
   //Size of Maze. Size of map depends on this value.
   private static int MazeSize =10;
+  
 
   public static void main(String[] args) {
       Game app = new Game();
@@ -59,6 +61,7 @@ public class Game extends SimpleApplication
     labirynt = new Map(MazeSize,MazeSize, assetManager, rootNode, bulletAppState);
     labirynt.buildMap();
     generatePlayer(-2, 5, 2);
+    getRootNode().attachChild(SkyFactory.createSky(getAssetManager(), "Textures/Sky/Bright/BrightSky.dds", SkyFactory.EnvMapType.CubeMap));
   }
   
   private void setUpKeys() {
@@ -75,32 +78,46 @@ public class Game extends SimpleApplication
     inputManager.addListener(this, "Down");
     inputManager.addListener(this, "Jump");
     inputManager.addListener(this, "Pause");
-//    inputManager.addListener(this, "Return");
+    inputManager.addListener(this, "Return");
   
   }
 
+  /** These are our custom actions triggered by key presses.
+   * We do not walk yet, we just keep track of the direction the user pressed.
+     * @param binding */
   @Override
   public void onAction(String binding, boolean isPressed, float tpf) {
-      if (binding.equals("Left")) {
-      left = isPressed;
-    } else if (binding.equals("Right")) {
-      right= isPressed;
-    } else if (binding.equals("Up")) {
-      up = isPressed;
-    } else if (binding.equals("Down")) {
-      down = isPressed;
-    } else if (binding.equals("Jump")) {
-      if (isPressed) { player.jump(); }
-    } else if (binding.equals("Pause")&& !isPressed){
-      isRunning = !isRunning;
-    }
+      switch (binding) {
+          case "Left":
+              left = isPressed;
+              break;
+          case "Right":
+              right= isPressed;
+              break;
+          case "Up":
+              up = isPressed;
+              break;
+          case "Down":
+              down = isPressed;
+              break;
+          case "Jump":
+              if (isPressed) { player.jump(); }
+              break;
+          case "Pause":
+              if (isPressed){
+                  pause=!pause;
+                  turnDebugMode(pause);
+              }           
+              break;
+          default:
+              break;
+      }
   }
 
 @Override
     public void simpleUpdate(float tpf) {
         
-        if(isRunning){
-            turnDebugMode(false);
+        if(!pause){
             camDir.set(cam.getDirection()).multLocal(0.075f);
             camLeft.set(cam.getLeft()).multLocal(0.05f);
             walkDirection.set(0, 0, 0);
@@ -120,17 +137,7 @@ public class Game extends SimpleApplication
             cam.setLocation(player.getPhysicsLocation());
             Vector3f loc = player.getPhysicsLocation();
             lighter.setPosition(new Vector3f(loc.x, loc.y, loc.z));
-            rootNode.addLight(lighter);
         }
-         else {
-                turnDebugMode(!isRunning);
-            }
-//        else{
-//            if (returnk){
-//                gamebreak=false;
-//                turnDebugMode(false);
-//            }
-//        }
     }
 
     private void generatePlayer(float locx, float locy, float locz) {
@@ -153,7 +160,7 @@ public class Game extends SimpleApplication
         
         sun.setDirection(new Vector3f(0, -5, 0));
         lighter = new PointLight(new Vector3f(),100);
-        
+        rootNode.addLight(lighter);
     }
     
     private void turnDebugMode(boolean par){
@@ -179,19 +186,20 @@ public class Game extends SimpleApplication
             */
             rootNode.addLight(lighter);
             rootNode.removeLight(sun);
+            cam.lookAtDirection(camDir, new Vector3f(0,1,0));
             changeFogParams(strongFog);
         }
     }
     
     private void createFog(){
-        fpp = new FilterPostProcessor(assetManager);
-        viewPort.addProcessor(fpp);
-        //Initialize the FogFilter and
-        //add it to the FilterPostProcesor.
-        fogFilter = new FogFilter();
-        fogFilter.setFogColor(new ColorRGBA(0.05f, 0.05f, 0.05f, 0.05f));
-        changeFogParams(strongFog);
-        fpp.addFilter(fogFilter);
+    fpp = new FilterPostProcessor(assetManager);
+    viewPort.addProcessor(fpp);
+    //Initialize the FogFilter and
+    //add it to the FilterPostProcesor.
+    fogFilter = new FogFilter();
+    fogFilter.setFogColor(new ColorRGBA(0.05f, 0.05f, 0.05f, 0.05f));
+    changeFogParams(strongFog);
+    fpp.addFilter(fogFilter);
 }
     
     private void changeFogParams(Vector2f fogParams){
