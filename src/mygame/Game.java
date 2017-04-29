@@ -82,9 +82,6 @@ public class Game extends SimpleApplication
   
   }
 
-  /** These are our custom actions triggered by key presses.
-   * We do not walk yet, we just keep track of the direction the user pressed.
-     * @param binding */
   @Override
   public void onAction(String binding, boolean isPressed, float tpf) {
       switch (binding) {

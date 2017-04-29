@@ -1,10 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jsproject;
-
 
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.BulletAppState;
@@ -21,10 +15,6 @@ import java.util.List;
 import java.util.Random;
 import jsproject.MapObject;
 
-/**
- *
- * @author Kuba
- */
 public class Map {
     
     public Map(int columns, int rows, AssetManager manager, Node rNode, BulletAppState bulletAppState){
@@ -293,20 +283,19 @@ public class Map {
     do zmiany
     */
     private void createObstacle(float locx, float locy, float locz){
-        Spatial teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
-        Material mat_default = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
-        teapot.setMaterial(mat_default);
-        teapot.setLocalTranslation(locx,locy,locz);
-        teapot.setLocalScale(3f);
-        teapot.rotate(0,15,0);
+        Spatial tree = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
+        //Material mat_default = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+        //tree.setMaterial(mat_default);
+        tree.setLocalTranslation(locx,locy,locz);
+        tree.setLocalScale(4f);
+        tree.rotate(0,15,0);
         CapsuleCollisionShape shape = new CapsuleCollisionShape(1.5f, 1.5f, 1);
 
         RigidBodyControl body=new RigidBodyControl(shape, 0);
-        teapot.addControl(body);
+        tree.addControl(body);
         bulletAppState.getPhysicsSpace().add(body);  
-        rootNode.attachChild(teapot);
+        rootNode.attachChild(tree);
 
-        
     }
     
     private Cell[][] M;
