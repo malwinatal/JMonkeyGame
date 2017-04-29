@@ -36,8 +36,7 @@ public class Map {
     
     
     //Method which generate random Maze.
-    private void generateMaze()  
-    {
+    private void generateMaze() {
         //start points of the maze
         int r = 0;
         int c = 0;
@@ -59,8 +58,7 @@ public class Map {
         /*Maze is generated as long as there are values in history
         what means: as long as there are possible steps back
         */
-        
-        
+
         while(rows_history.size()>0){    
             /*
             List of visited cells near actual cell.
@@ -119,6 +117,7 @@ public class Map {
                     M[r][c].up=1;
                 }
             }
+            
             /*
             If there are no possible directions to go from actual cell,
             go to the previous cell.
@@ -138,8 +137,6 @@ public class Map {
     Method which print Maze to the image. 
     */
     public void buildMap(){
-        
-       
         generateMaze();
         
         /*
@@ -147,8 +144,7 @@ public class Map {
         */
         
         Point p = new Point(1,1);
-        
-        
+
         /*
         Create map with its borders dependably of predefined size
         */
@@ -255,9 +251,8 @@ public class Map {
         
         ground.addMatText(mat, grass, new Vector2f(10f,10f));
         ground.addPhysics();
-       
-        
     }
+    
     /*
     Creation of the borders of the map.
     Parameters specifies its size and location.
@@ -275,10 +270,9 @@ public class Map {
             "Textures/Terrain/splat/dirt.jpg");
         
         wallBox.addMatText(mat, dirt);
-        wallBox.addPhysics();
-
-        
+        wallBox.addPhysics(); 
     }
+    
     /*
     do zmiany
     */
@@ -302,4 +296,5 @@ public class Map {
     private AssetManager assetManager;
     private Node rootNode;
     private BulletAppState bulletAppState;
+    
 }

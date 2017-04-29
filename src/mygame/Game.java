@@ -71,14 +71,14 @@ public class Game extends SimpleApplication
     inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));
     inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
     inputManager.addMapping("Pause", new KeyTrigger(KeyInput.KEY_P));
-    inputManager.addMapping("Return", new KeyTrigger(KeyInput.KEY_R));
+//    inputManager.addMapping("Return", new KeyTrigger(KeyInput.KEY_R));
     inputManager.addListener(this, "Left");
     inputManager.addListener(this, "Right");
     inputManager.addListener(this, "Up");
     inputManager.addListener(this, "Down");
     inputManager.addListener(this, "Jump");
     inputManager.addListener(this, "Pause");
-    inputManager.addListener(this, "Return");
+//    inputManager.addListener(this, "Return");
   
   }
 
