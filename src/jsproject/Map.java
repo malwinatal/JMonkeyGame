@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import jsproject.MapObject;
+import jsproject.MapObject;
 
 public class Map {
     
@@ -36,7 +37,8 @@ public class Map {
     
     
     //Method which generate random Maze.
-    private void generateMaze() {
+    private void generateMaze()  
+    {
         //start points of the maze
         int r = 0;
         int c = 0;
@@ -53,12 +55,15 @@ public class Map {
         
         Random rand = new Random();
         int rand_value;
+        boolean rand_surprise;
+        boolean endP=false;
         
         
         /*Maze is generated as long as there are values in history
         what means: as long as there are possible steps back
         */
-
+        
+        
         while(rows_history.size()>0){    
             /*
             List of visited cells near actual cell.
@@ -116,13 +121,23 @@ public class Map {
                     r=r+1;
                     M[r][c].up=1;
                 }
+                endP=true;
+                
             }
-            
             /*
             If there are no possible directions to go from actual cell,
             go to the previous cell.
             */
             else{
+                
+                if (endP)
+                {
+                    rand_surprise = rand.nextBoolean();
+                    M[r][c].gift=rand_surprise;
+                    M[r][c].enemy=!rand_surprise;
+                    endP=false;
+                }
+                
                 r=(Integer)rows_history.get(rows_history.size()-1);
                 c=(Integer)cols_history.get(cols_history.size()-1);
                 
@@ -137,6 +152,8 @@ public class Map {
     Method which print Maze to the image. 
     */
     public void buildMap(){
+        
+       
         generateMaze();
         
         /*
@@ -144,7 +161,8 @@ public class Map {
         */
         
         Point p = new Point(1,1);
-
+        
+        
         /*
         Create map with its borders dependably of predefined size
         */
@@ -201,6 +219,22 @@ public class Map {
                     createWallBox(p.x, 0, p.y-1);
                     createWallBox(p.x+1, 0, p.y-1);
                 }
+                
+                if(r>0 || c>0)
+                {
+                    if(M[M[0].length-(1+r)][c].gift )
+                    {
+                        createGift(p.x+0.5f, 0, p.y+0.5f);
+                    }
+                    if(M[M[0].length-(1+r)][c].enemy)
+                    {
+                        createGift(p.x+0.5f, 0, p.y+0.5f);
+                    }
+                    
+                }
+                
+                
+                    
                 /*
                 Creation boxes in the corners.
                 */
@@ -223,7 +257,7 @@ public class Map {
     Creation of simple wall box. 
     Parameters specifies location of the box
     */
-    void createWallBox(int locx, int locy, int locz){
+    void createWallBox(float locx, float locy, float locz){
         MapObject wallBox = new MapObject(0.5f, 3f, 0.5f, 
                                           locx, locy, locz,
                                         bulletAppState, rootNode);
@@ -251,8 +285,9 @@ public class Map {
         
         ground.addMatText(mat, grass, new Vector2f(10f,10f));
         ground.addPhysics();
+       
+        
     }
-    
     /*
     Creation of the borders of the map.
     Parameters specifies its size and location.
@@ -270,9 +305,10 @@ public class Map {
             "Textures/Terrain/splat/dirt.jpg");
         
         wallBox.addMatText(mat, dirt);
-        wallBox.addPhysics(); 
+        wallBox.addPhysics();
+
+        
     }
-    
     /*
     do zmiany
     */
@@ -292,9 +328,23 @@ public class Map {
 
     }
     
+    private void createGift(float locx, float locy, float locz)
+    {
+        MapObject gift = new MapObject(50,50,1,
+                                        locx, locy, locz,
+                                        bulletAppState, rootNode);
+        Material mat = new Material(assetManager,
+            "Common/MatDefs/Light/Lighting.j3md");         
+        Texture dirt = assetManager.loadTexture(
+            "Textures/Terrain/Pond/Pond.jpg");
+        
+        gift.addMatText(mat, dirt);
+        gift.addPhysics(1,1,1);
+        
+    }
+    
     private Cell[][] M;
     private AssetManager assetManager;
     private Node rootNode;
     private BulletAppState bulletAppState;
-    
 }

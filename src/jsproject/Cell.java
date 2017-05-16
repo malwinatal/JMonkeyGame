@@ -8,6 +8,9 @@ public class Cell {
         up = 0;
         down = 0;
         visited = 0;
+        enemy = false;
+        gift = false;
+        
     }
     
     public int left;
@@ -15,5 +18,7 @@ public class Cell {
     public int up;
     public int down;
     public int visited;
+    public boolean enemy;
+    public boolean gift;
     
 }

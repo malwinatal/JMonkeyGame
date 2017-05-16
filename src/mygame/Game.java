@@ -71,14 +71,14 @@ public class Game extends SimpleApplication
     inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));
     inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
     inputManager.addMapping("Pause", new KeyTrigger(KeyInput.KEY_P));
-//    inputManager.addMapping("Return", new KeyTrigger(KeyInput.KEY_R));
+    inputManager.addMapping("Return", new KeyTrigger(KeyInput.KEY_R));
     inputManager.addListener(this, "Left");
     inputManager.addListener(this, "Right");
     inputManager.addListener(this, "Up");
     inputManager.addListener(this, "Down");
     inputManager.addListener(this, "Jump");
     inputManager.addListener(this, "Pause");
-//    inputManager.addListener(this, "Return");
+    inputManager.addListener(this, "Return");
   
   }
 
@@ -142,8 +142,8 @@ public class Game extends SimpleApplication
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.82f, 1.5f, 1);
         cam.setFrustumNear(0.5f);
         player = new CharacterControl(capsuleShape, 0.05f);
-        player.setJumpSpeed(20);
-        player.setFallSpeed(30);
+        player.setJumpSpeed(15);
+        player.setFallSpeed(20);
         player.setGravity(30);
         player.setPhysicsLocation(new Vector3f(locx, locy, locz));
         bulletAppState.getPhysicsSpace().add(player);
