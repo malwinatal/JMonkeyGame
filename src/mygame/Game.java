@@ -55,6 +55,7 @@ public class Game extends SimpleApplication
 
   @Override
   public void simpleInitApp() {
+      
     bulletAppState = new BulletAppState();
     stateManager.attach(bulletAppState); 
     flyCam.setMoveSpeed(10);
@@ -156,7 +157,7 @@ public class Game extends SimpleApplication
         player = new CharacterControl(capsuleShape, 0.05f);
         player.setJumpSpeed(15);
         player.setFallSpeed(20);
-        player.setGravity(30);
+        player.setGravity(40);
         player.setPhysicsLocation(new Vector3f(locx, locy, locz));
         bulletAppState.getPhysicsSpace().add(player);
     }

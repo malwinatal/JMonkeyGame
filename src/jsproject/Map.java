@@ -1,8 +1,12 @@
 package jsproject;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.LoopMode;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
@@ -18,7 +22,7 @@ import jsproject.MapObject;
 import jsproject.MapObject;
 
 public class Map {
-    
+
     public Map(int columns, int rows, AssetManager manager, Node rNode, BulletAppState bulletAppState){
         /*Initialize whole table of Cells with default values/
         Object of Cell class contains: up, down, left, right which
@@ -38,8 +42,7 @@ public class Map {
     
     
     //Method which generate random Maze.
-    private void generateMaze()  
-    {
+    private void generateMaze()  {
         //start points of the maze
         int r = 0;
         int c = 0;
@@ -153,7 +156,7 @@ public class Map {
     Method which print Maze to the image. 
     */
     public void buildMap(){
-        
+       
         //number of gifts
         int numGift = 0;
        
@@ -177,6 +180,7 @@ public class Map {
         createBorder(0.5f, 3f, M.length*2+5, M.length*4+5,0,M.length*2);
         createObstacle(-2,-2,-2);
         createObstacle(-2,-2,6);
+        //createEnemy(2,0,2);
         
         /*
         Loop going through the cells of maze.
@@ -224,24 +228,31 @@ public class Map {
                 }
                 
                 //creating gifts and enemies, in randomly choose ends of the maze
-                if(r>0 || c>0)
-                {   
-                    
+                if(r>0 || c>0) {
                     if(M[M[0].length-(1+r)][c].gift ){
-                        int random = (int )(Math.random() * 3);
-                        if(random<2){
-                            createGift(p.x+0.5f, 0, p.y+0.5f);    
-                         }
-                        if(random>=2){
-                            createEnemy(p.x+0.5f, 0, p.y+0.5f);//then enemy
-                         }
-                        //TODO if rand>3 create enemy or something
+                        if(flag){
+                            createGift(p.x+0.5f, 0, p.y+0.5f);
+                            flag=false;
+                        }
+                        else{
+                            createEnemy(p.x+0.5f, 0, p.y+0.5f);
+                            flag=true;
+                        }
+                    
+//                    if(M[M[0].length-(1+r)][c].gift ){
+//                        int random = (int )(Math.random() * 3);
+//                        if(random<2){
+//                            createGift(p.x+0.5f, 0, p.y+0.5f);    
+//                         }
+//                       else{
+//                            createEnemy(p.x+0.5f, 0, p.y+0.5f);//then enemy
+//                         }
+//                        //i dont like this idea
+                    
                     }
                     
                 }
-                
-                
-                    
+  
                 /*
                 Creation boxes in the corners.
                 */
@@ -349,19 +360,32 @@ public class Map {
         gift.addPhysics(1,1,1);
         
     }
-    private void createEnemy(float locx, float locy, float locz)
-    {
+    
+    private void createEnemy(float locx, float locy, float locz){
         golem = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-        golem.setLocalScale(0.5f);
+        golem.setLocalScale(0.3f);
         golem.setLocalTranslation(locx, locy, locz);
+        CapsuleCollisionShape shape = new CapsuleCollisionShape(0.6f, 0.6f, 1);
+        RigidBodyControl body=new RigidBodyControl(shape, 0);
+        golem.addControl(body);
+        bulletAppState.getPhysicsSpace().add(body);  
         rootNode.attachChild(golem);
+        control = golem.getControl(AnimControl.class);
+       
+        channel = control.createChannel();
+        channel.setAnim("Walk");
+        channel.setLoopMode(LoopMode.Loop);
+        channel.setSpeed(1f);
     }
     
     private Cell[][] M;
     private AssetManager assetManager;
     private Node rootNode;
     private BulletAppState bulletAppState;
-    
-    
+
     private Node golem;
+    private AnimChannel channel;
+    private AnimControl control;
+    private Boolean flag=true;
+    
 }
