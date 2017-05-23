@@ -6,6 +6,7 @@ import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
@@ -153,6 +154,8 @@ public class Map {
     */
     public void buildMap(){
         
+        //number of gifts
+        int numGift = 0;
        
         generateMaze();
         
@@ -220,15 +223,19 @@ public class Map {
                     createWallBox(p.x+1, 0, p.y-1);
                 }
                 
+                //creating gifts and enemies, in randomly choose ends of the maze
                 if(r>0 || c>0)
-                {
-                    if(M[M[0].length-(1+r)][c].gift )
-                    {
-                        createGift(p.x+0.5f, 0, p.y+0.5f);
-                    }
-                    if(M[M[0].length-(1+r)][c].enemy)
-                    {
-                        createGift(p.x+0.5f, 0, p.y+0.5f);
+                {   
+                    
+                    if(M[M[0].length-(1+r)][c].gift ){
+                        int random = (int )(Math.random() * 3);
+                        if(random<2){
+                            createGift(p.x+0.5f, 0, p.y+0.5f);    
+                         }
+                        if(random>=2){
+                            createGift(p.x+0.5f, 0, p.y+0.5f);//then enemy
+                         }
+                        //TODO if rand>3 create enemy or something
                     }
                     
                 }
@@ -341,6 +348,19 @@ public class Map {
         gift.addMatText(mat, dirt);
         gift.addPhysics(1,1,1);
         
+    }
+    private void createEnemy(float locx, float locy, float locz)
+    {
+        MapObject enemy = new MapObject(50,50,1,
+                                        locx, locy, locz,
+                                        bulletAppState, rootNode);
+        Material mat = new Material(assetManager,
+            "Common/MatDefs/Light/Lighting.j3md");         
+        Texture dirt = assetManager.loadTexture(
+            "Textures/Terrain/Pond/Pond.jpg");
+        
+        enemy.addMatText(mat, dirt);
+        enemy.addPhysics(1,1,1);
     }
     
     private Cell[][] M;

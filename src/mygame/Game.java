@@ -14,6 +14,9 @@ import com.jme3.light.PointLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FogFilter;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
+import com.jme3.shadow.DirectionalLightShadowFilter;
+import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.util.SkyFactory;
 import jsproject.Map;
 
@@ -62,6 +65,15 @@ public class Game extends SimpleApplication
     labirynt.buildMap();
     generatePlayer(-2, 5, 2);
     getRootNode().attachChild(SkyFactory.createSky(getAssetManager(), "Textures/Sky/Bright/BrightSky.dds", SkyFactory.EnvMapType.CubeMap));
+    
+//    DirectionalLightShadowFilter dlsf = new DirectionalLightShadowFilter(assetManager, 1024, 2);
+//    dlsf.setLight(sun);
+//    dlsf.setEnabled(true);
+//    FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+//    fpp.addFilter(dlsf);
+//    viewPort.addProcessor(fpp);
+//    rootNode.setShadowMode(ShadowMode.CastAndReceive);
+
   }
   
   private void setUpKeys() {
