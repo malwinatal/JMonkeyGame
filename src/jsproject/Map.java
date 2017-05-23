@@ -233,7 +233,7 @@ public class Map {
                             createGift(p.x+0.5f, 0, p.y+0.5f);    
                          }
                         if(random>=2){
-                            createGift(p.x+0.5f, 0, p.y+0.5f);//then enemy
+                            createEnemy(p.x+0.5f, 0, p.y+0.5f);//then enemy
                          }
                         //TODO if rand>3 create enemy or something
                     }
@@ -351,20 +351,17 @@ public class Map {
     }
     private void createEnemy(float locx, float locy, float locz)
     {
-        MapObject enemy = new MapObject(50,50,1,
-                                        locx, locy, locz,
-                                        bulletAppState, rootNode);
-        Material mat = new Material(assetManager,
-            "Common/MatDefs/Light/Lighting.j3md");         
-        Texture dirt = assetManager.loadTexture(
-            "Textures/Terrain/Pond/Pond.jpg");
-        
-        enemy.addMatText(mat, dirt);
-        enemy.addPhysics(1,1,1);
+        golem = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
+        golem.setLocalScale(0.5f);
+        golem.setLocalTranslation(locx, locy, locz);
+        rootNode.attachChild(golem);
     }
     
     private Cell[][] M;
     private AssetManager assetManager;
     private Node rootNode;
     private BulletAppState bulletAppState;
+    
+    
+    private Node golem;
 }
