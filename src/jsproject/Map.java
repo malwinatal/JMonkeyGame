@@ -23,7 +23,7 @@ import jsproject.MapObject;
 
 public class Map {
 
-    public Map(int columns, int rows, AssetManager manager, Node rNode, BulletAppState bulletAppState){
+    public Map(int columns, int rows, AssetManager manager, Node rNode, BulletAppState bulletAppState, Node shootables){
         /*Initialize whole table of Cells with default values/
         Object of Cell class contains: up, down, left, right which
         are possible directions of discovering the maze, and visited
@@ -38,6 +38,7 @@ public class Map {
         this.rootNode = rNode;
         this.bulletAppState = bulletAppState;
         this.assetManager=manager;
+        this.shootables=shootables;
     }
     
     
@@ -342,8 +343,7 @@ public class Map {
         RigidBodyControl body=new RigidBodyControl(shape, 0);
         tree.addControl(body);
         bulletAppState.getPhysicsSpace().add(body);  
-        rootNode.attachChild(tree);
-
+        shootables.attachChild(tree);
     }
     
     private void createGift(float locx, float locy, float locz)
@@ -387,5 +387,6 @@ public class Map {
     private AnimChannel channel;
     private AnimControl control;
     private Boolean flag=true;
+    private Node shootables;
     
 }
