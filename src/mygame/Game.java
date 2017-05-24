@@ -4,6 +4,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
+import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.Vector2f;
@@ -39,6 +40,7 @@ public class Game extends SimpleApplication
   private PointLight lighter;
   private DirectionalLight sun = new DirectionalLight();
   private Map labirynt;
+  private BitmapText ch;
   
   //Vectors for fog parameters: distance, density
   private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -48,6 +50,7 @@ public class Game extends SimpleApplication
   private static int MazeSize =10;
   
 
+  
   public static void main(String[] args) {
       Game app = new Game();
       app.start();
@@ -55,6 +58,8 @@ public class Game extends SimpleApplication
 
   @Override
   public void simpleInitApp() {
+      
+      initCrossHairs();
       
     bulletAppState = new BulletAppState();
     stateManager.attach(bulletAppState); 
@@ -186,6 +191,8 @@ public class Game extends SimpleApplication
             cam.setLocation(new Vector3f(MazeSize*2,MazeSize*2+20,MazeSize*2));
             cam.lookAt(new Vector3f(MazeSize*2,0,MazeSize*2), new Vector3f(0,1,0));
             changeFogParams(noFog);
+            guiNode.detachChild(ch);
+            
         }
         else{
             /*
@@ -198,6 +205,7 @@ public class Game extends SimpleApplication
             rootNode.removeLight(sun);
             cam.lookAtDirection(camDir, new Vector3f(0,1,0));
             changeFogParams(strongFog);
+            guiNode.attachChild(ch);
         }
     }
     
@@ -216,6 +224,16 @@ public class Game extends SimpleApplication
         fogFilter.setFogDistance(fogParams.x);
         fogFilter.setFogDensity(fogParams.y);
     }
+    
+    protected void initCrossHairs() {
+        setDisplayStatView(false);
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        ch = new BitmapText(guiFont, false);
+        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
+        ch.setText("+"); // crosshairs
+        ch.setLocalTranslation(settings.getWidth() / 2 - ch.getLineWidth()/2, settings.getHeight() / 2 + ch.getLineHeight()/2, 0);
+        guiNode.attachChild(ch);   
+  }
     
 //  protected void CreateTree(){
 //      //creating a tree
