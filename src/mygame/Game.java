@@ -248,7 +248,7 @@ public class Game extends SimpleApplication
     }
 
     protected void initMark() {
-        Sphere sphere = new Sphere(30, 30, 0.2f);
+        Sphere sphere = new Sphere(15, 15, 0.1f);
         mark = new Geometry("BOOM!", sphere);
         Material mark_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mark_mat.setColor("Color", ColorRGBA.Red);
@@ -277,6 +277,7 @@ public class Game extends SimpleApplication
                         String hit = results.getCollision(i).getGeometry().getName();
                         System.out.println("* Collision #" + i);
                         System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
+                        shootables.detachChild(results.getCollision(i).getGeometry());
                     }
                     // 5. Use the results (we mark the hit object)
                     if (results.size() > 0) {
