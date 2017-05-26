@@ -99,7 +99,7 @@ public class MapObject {
     
     private Box b;
     private Sphere s;
-    private Geometry geom;
+    public Geometry geom;
     private CollisionShape shape;
     private RigidBodyControl body;
     private BulletAppState bullet;

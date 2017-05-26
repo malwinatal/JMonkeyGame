@@ -46,6 +46,8 @@ public class Game extends SimpleApplication
     private FogFilter fogFilter;
     private PointLight lighter;
     private DirectionalLight sun = new DirectionalLight();
+    private DirectionalLightShadowRenderer dlsr;
+    private final int SHADOWMAP_SIZE=512;
     private Map labirynt;
     private BitmapText ch;
     private Geometry mark;
@@ -166,6 +168,8 @@ public class Game extends SimpleApplication
             Vector3f loc = player.getPhysicsLocation();
             lighter.setPosition(new Vector3f(loc.x, loc.y, loc.z));
         }
+                //labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
+
     }
 
     private void generatePlayer(float locx, float locy, float locz) {
@@ -184,11 +188,19 @@ public class Game extends SimpleApplication
         /*
         Creation of two lights, one directional for DebugMode,
         one point light which is following the player.
-         */
-
-        sun.setDirection(new Vector3f(0, -5, 0));
-        lighter = new PointLight(new Vector3f(), 100);
+        */
+        
+        sun.setDirection(new Vector3f(1, -1, 1));
+        lighter = new PointLight(new Vector3f(),100);
         rootNode.addLight(lighter);
+       
+        
+        dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
+        dlsr.setLight(sun);
+        dlsr.setShadowIntensity(0.5f);
+        dlsr.setShadowZExtend(5f);
+        viewPort.addProcessor(dlsr);
+        rootNode.addLight(sun);
     }
 
     private void turnDebugMode(boolean par) {
@@ -201,6 +213,7 @@ public class Game extends SimpleApplication
              */
             rootNode.addLight(sun);
             rootNode.removeLight(lighter);
+            dlsr.setShadowIntensity(0);
             cam.setLocation(new Vector3f(MazeSize * 2, MazeSize * 2 + 20, MazeSize * 2));
             cam.lookAt(new Vector3f(MazeSize * 2, 0, MazeSize * 2), new Vector3f(0, 1, 0));
             changeFogParams(noFog);
@@ -215,6 +228,7 @@ public class Game extends SimpleApplication
              */
             rootNode.addLight(lighter);
             rootNode.removeLight(sun);
+            dlsr.setShadowIntensity(0.5f);
             cam.lookAtDirection(camDir, new Vector3f(0, 1, 0));
             changeFogParams(strongFog);
             guiNode.attachChild(ch);

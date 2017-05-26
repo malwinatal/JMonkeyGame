@@ -10,16 +10,17 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import jsproject.MapObject;
-import jsproject.MapObject;
 
 public class Map {
 
@@ -39,6 +40,7 @@ public class Map {
         this.bulletAppState = bulletAppState;
         this.assetManager = manager;
         this.shootables = shootables;
+         ArmyOfEnemies = new ArrayList();
     }
 
     //Method which generate random Maze.
@@ -171,7 +173,9 @@ public class Map {
         createBorder(0.5f, 3f, M.length * 2 + 5, M.length * 4 + 5, 0, M.length * 2);
         createObstacle(-2, -2, -2);
         createObstacle(-2, -2, 6);
-        createEnemy(2, 0, 2);
+        
+//        just for testing shooting
+//        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 2, 0, 2));
 
         /*
         Loop going through the cells of maze.
@@ -225,7 +229,8 @@ public class Map {
                             createGift(p.x + 0.5f, 0, p.y + 0.5f);
                             flag = false;
                         } else {
-                            createEnemy(p.x + 0.5f, 0, p.y + 0.5f);
+                            ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 
+                                                    p.x+0.5f, 0, p.y+0.5f)); 
                             flag = true;
                         }
 
@@ -275,6 +280,7 @@ public class Map {
         Texture dirt = assetManager.loadTexture(
                       "Textures/Terrain/splat/dirt.jpg");
 
+        wallBox.geom.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         wallBox.addMatText(mat, dirt);
         wallBox.addPhysics();
 
@@ -292,6 +298,7 @@ public class Map {
         Texture grass = assetManager.loadTexture(
                       "Textures/Terrain/splat/grass.jpg");
 
+        ground.geom.setShadowMode(RenderQueue.ShadowMode.Receive);
         ground.addMatText(mat, grass, new Vector2f(10f, 10f));
         ground.addPhysics();
 
@@ -313,6 +320,7 @@ public class Map {
         Texture dirt = assetManager.loadTexture(
                       "Textures/Terrain/splat/dirt.jpg");
 
+        //wallBox.geom.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         wallBox.addMatText(mat, dirt);
         wallBox.addPhysics();
 
@@ -332,6 +340,7 @@ public class Map {
 
         RigidBodyControl body = new RigidBodyControl(shape, 0);
         tree.addControl(body);
+        tree.setShadowMode(RenderQueue.ShadowMode.Cast);
         bulletAppState.getPhysicsSpace().add(body);
         //rootNode.attachChild(tree);
         shootables.attachChild(tree);
@@ -351,23 +360,47 @@ public class Map {
 
     }
 
-    private void createEnemy(float locx, float locy, float locz) {
-        golem = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-        golem.setLocalScale(0.3f);
-        golem.setLocalTranslation(locx, locy, locz);
-        CapsuleCollisionShape shape = new CapsuleCollisionShape(0.7f, 0.7f, 1);
-        RigidBodyControl body = new RigidBodyControl(shape, 0);
-        golem.addControl(body);
-        bulletAppState.getPhysicsSpace().add(body);
-        shootables.attachChild(golem);
-        control = golem.getControl(AnimControl.class);
+    
+    public void moveGolems(float playerLocX, float playerLocZ){
+        for(Enemy golemEnemy : ArmyOfEnemies){
+            
+            Vector3f golemLoc = golemEnemy.getGolemLocation();
+            
+            boolean possibleDirections[]=new boolean[4];
+            possibleDirections[0]=false;
+            possibleDirections[1]=false;
+            possibleDirections[2]=false;
+            possibleDirections[3]=false;
+            int MazeX=Math.round((golemLoc.x-1.5f)/4);
+            int MazeY=Math.round((golemLoc.z-1.5f)/4);
+            
+            if(MazeX>=0 && MazeY>=0 && MazeX<M.length && MazeY<M.length){
+               
+//                if(M[M.length-(MazeX+1)][MazeY].left==1){possibleDirections[0]=true;}
+//                if(M[M.length-(MazeX+1)][MazeY].right==1){possibleDirections[1]=true;}
+//                if(M[M.length-(MazeX+1)][MazeY].down==1){possibleDirections[2]=true;}
+//                if(M[M.length-(MazeX+1)][MazeY].up==1){possibleDirections[3]=true;}
 
-        channel = control.createChannel();
-        channel.setAnim("Walk");
-        channel.setLoopMode(LoopMode.Loop);
-        channel.setSpeed(1f);
+                    if(M[M.length-(MazeX+1)][MazeY].left==1){possibleDirections[0]=true;}
+                    if(M[M.length-(MazeX+1)][MazeY].right==1){possibleDirections[1]=true;}
+                    if(M[M.length-(MazeX+1)][MazeY].down==1){possibleDirections[2]=true;}
+                    if(M[M.length-(MazeX+1)][MazeY].up==1){possibleDirections[3]=true;}
+                    
+            }
+            
+            
+            
+            System.out.print(golemLoc+" ");
+            System.out.print(M.length-(MazeX+1)+" ");
+            System.out.print(MazeY+" ");
+            System.out.print(Arrays.toString(possibleDirections)+" ");
+            golemEnemy.runGolemRun(playerLocX,playerLocZ,possibleDirections);
+              System.out.print("\n");
+        }        
     }
 
+    private List<Enemy> ArmyOfEnemies;
+    
     private Cell[][] M;
     private AssetManager assetManager;
     private Node rootNode;
