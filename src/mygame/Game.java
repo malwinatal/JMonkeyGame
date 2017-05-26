@@ -6,6 +6,8 @@ import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
@@ -47,11 +49,12 @@ public class Game extends SimpleApplication
     private PointLight lighter;
     private DirectionalLight sun = new DirectionalLight();
     private DirectionalLightShadowRenderer dlsr;
-    private final int SHADOWMAP_SIZE=512;
+    private final int SHADOWMAP_SIZE = 512;
     private Map labirynt;
     private BitmapText ch;
     private Geometry mark;
     private Node shootables;
+    private ParticleEmitter debrisEffect;
 
     //Vectors for fog parameters: distance, density
     private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -70,6 +73,7 @@ public class Game extends SimpleApplication
 
         initCrossHairs();
         initMark();
+        initEffect();
         shootables = new Node("Shootables");
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
@@ -168,7 +172,7 @@ public class Game extends SimpleApplication
             Vector3f loc = player.getPhysicsLocation();
             lighter.setPosition(new Vector3f(loc.x, loc.y, loc.z));
         }
-                //labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
+        //labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
 
     }
 
@@ -188,13 +192,12 @@ public class Game extends SimpleApplication
         /*
         Creation of two lights, one directional for DebugMode,
         one point light which is following the player.
-        */
-        
+         */
+
         sun.setDirection(new Vector3f(1, -1, 1));
-        lighter = new PointLight(new Vector3f(),100);
+        lighter = new PointLight(new Vector3f(), 100);
         rootNode.addLight(lighter);
-       
-        
+
         dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
         dlsr.setLight(sun);
         dlsr.setShadowIntensity(0.5f);
@@ -262,11 +265,32 @@ public class Game extends SimpleApplication
     }
 
     protected void initMark() {
-        Sphere sphere = new Sphere(15, 15, 0.1f);
+        Sphere sphere = new Sphere(20, 20, 0.03f);
         mark = new Geometry("BOOM!", sphere);
         Material mark_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mark_mat.setColor("Color", ColorRGBA.Red);
+        mark_mat.setColor("Color", ColorRGBA.Black);
         mark.setMaterial(mark_mat);
+    }
+
+    protected void initEffect() {
+        /**
+         * Explosion effect. Uses Texture from jme3-test-data library!
+         */
+        debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
+        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
+        debrisEffect.setMaterial(debrisMat);
+        debrisEffect.setImagesX(3);
+        debrisEffect.setImagesY(3);
+        debrisEffect.setRotateSpeed(5);
+        debrisEffect.setSelectRandomImage(true);
+        debrisEffect.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 6, 0));
+        debrisEffect.setStartColor(ColorRGBA.Gray);
+        debrisEffect.setEndColor(ColorRGBA.Cyan);
+        debrisEffect.setGravity(0f, 6f, 0f);
+        debrisEffect.getParticleInfluencer().setVelocityVariation(.90f);
+        debrisEffect.emitParticles(1);
+
     }
 
     private ActionListener actionListener = new ActionListener() {
@@ -283,6 +307,8 @@ public class Game extends SimpleApplication
                     // DO NOT check collision with the root node, or else ALL collisions will hit the skybox! Always make a separate node for objects you want to collide with.
                     shootables.collideWith(ray, results);
                     // 4. Print the results
+                    
+                    //nie potrzebne, ale poki co zostawie
                     System.out.println("----- Collisions? " + results.size() + "-----");
                     for (int i = 0; i < results.size(); i++) {
                         // For each hit, we know distance, impact point, name of geometry.
@@ -291,18 +317,22 @@ public class Game extends SimpleApplication
                         String hit = results.getCollision(i).getGeometry().getName();
                         System.out.println("* Collision #" + i);
                         System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
-                        shootables.detachChild(results.getCollision(i).getGeometry());
                     }
                     // 5. Use the results (we mark the hit object)
                     if (results.size() > 0) {
-                        // The closest collision point is what was truly hit:
+
                         CollisionResult closest = results.getClosestCollision();
-                        // Let's interact - we mark the hit with a red dot.
                         mark.setLocalTranslation(closest.getContactPoint());
+                        debrisEffect.setLocalTranslation(closest.getContactPoint());
+                        rootNode.attachChild(debrisEffect);
                         rootNode.attachChild(mark);
+                        debrisEffect.killAllParticles();
                     } else {
-                        // No hits? Then remove the red mark.
+                        // No hits
                         rootNode.detachChild(mark);
+                        debrisEffect.killAllParticles();
+                        rootNode.detachChild(debrisEffect);
+
                     }
                 }
             }

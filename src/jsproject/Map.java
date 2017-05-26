@@ -40,7 +40,7 @@ public class Map {
         this.bulletAppState = bulletAppState;
         this.assetManager = manager;
         this.shootables = shootables;
-         ArmyOfEnemies = new ArrayList();
+        ArmyOfEnemies = new ArrayList();
     }
 
     //Method which generate random Maze.
@@ -173,7 +173,7 @@ public class Map {
         createBorder(0.5f, 3f, M.length * 2 + 5, M.length * 4 + 5, 0, M.length * 2);
         createObstacle(-2, -2, -2);
         createObstacle(-2, -2, 6);
-        
+
 //        just for testing shooting
 //        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 2, 0, 2));
 
@@ -229,8 +229,8 @@ public class Map {
                             createGift(p.x + 0.5f, 0, p.y + 0.5f);
                             flag = false;
                         } else {
-                            ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 
-                                                    p.x+0.5f, 0, p.y+0.5f)); 
+                            ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager,
+                                          p.x + 0.5f, 0, p.y + 0.5f));
                             flag = true;
                         }
 
@@ -360,47 +360,51 @@ public class Map {
 
     }
 
-    
-    public void moveGolems(float playerLocX, float playerLocZ){
-        for(Enemy golemEnemy : ArmyOfEnemies){
-            
+    public void moveGolems(float playerLocX, float playerLocZ) {
+        for (Enemy golemEnemy : ArmyOfEnemies) {
+
             Vector3f golemLoc = golemEnemy.getGolemLocation();
-            
-            boolean possibleDirections[]=new boolean[4];
-            possibleDirections[0]=false;
-            possibleDirections[1]=false;
-            possibleDirections[2]=false;
-            possibleDirections[3]=false;
-            int MazeX=Math.round((golemLoc.x-1.5f)/4);
-            int MazeY=Math.round((golemLoc.z-1.5f)/4);
-            
-            if(MazeX>=0 && MazeY>=0 && MazeX<M.length && MazeY<M.length){
-               
+
+            boolean possibleDirections[] = new boolean[4];
+            possibleDirections[0] = false;
+            possibleDirections[1] = false;
+            possibleDirections[2] = false;
+            possibleDirections[3] = false;
+            int MazeX = Math.round((golemLoc.x - 1.5f) / 4);
+            int MazeY = Math.round((golemLoc.z - 1.5f) / 4);
+
+            if (MazeX >= 0 && MazeY >= 0 && MazeX < M.length && MazeY < M.length) {
+
 //                if(M[M.length-(MazeX+1)][MazeY].left==1){possibleDirections[0]=true;}
 //                if(M[M.length-(MazeX+1)][MazeY].right==1){possibleDirections[1]=true;}
 //                if(M[M.length-(MazeX+1)][MazeY].down==1){possibleDirections[2]=true;}
 //                if(M[M.length-(MazeX+1)][MazeY].up==1){possibleDirections[3]=true;}
+                if (M[M.length - (MazeX + 1)][MazeY].left == 1) {
+                    possibleDirections[0] = true;
+                }
+                if (M[M.length - (MazeX + 1)][MazeY].right == 1) {
+                    possibleDirections[1] = true;
+                }
+                if (M[M.length - (MazeX + 1)][MazeY].down == 1) {
+                    possibleDirections[2] = true;
+                }
+                if (M[M.length - (MazeX + 1)][MazeY].up == 1) {
+                    possibleDirections[3] = true;
+                }
 
-                    if(M[M.length-(MazeX+1)][MazeY].left==1){possibleDirections[0]=true;}
-                    if(M[M.length-(MazeX+1)][MazeY].right==1){possibleDirections[1]=true;}
-                    if(M[M.length-(MazeX+1)][MazeY].down==1){possibleDirections[2]=true;}
-                    if(M[M.length-(MazeX+1)][MazeY].up==1){possibleDirections[3]=true;}
-                    
             }
-            
-            
-            
-            System.out.print(golemLoc+" ");
-            System.out.print(M.length-(MazeX+1)+" ");
-            System.out.print(MazeY+" ");
-            System.out.print(Arrays.toString(possibleDirections)+" ");
-            golemEnemy.runGolemRun(playerLocX,playerLocZ,possibleDirections);
-              System.out.print("\n");
-        }        
+
+            System.out.print(golemLoc + " ");
+            System.out.print(M.length - (MazeX + 1) + " ");
+            System.out.print(MazeY + " ");
+            System.out.print(Arrays.toString(possibleDirections) + " ");
+            golemEnemy.runGolemRun(playerLocX, playerLocZ, possibleDirections);
+            System.out.print("\n");
+        }
     }
 
     private List<Enemy> ArmyOfEnemies;
-    
+
     private Cell[][] M;
     private AssetManager assetManager;
     private Node rootNode;
