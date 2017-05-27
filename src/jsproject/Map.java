@@ -178,7 +178,7 @@ public class Map {
 //        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 2, 0, 2));
 
         /*
-        Loop going through the cells of maze.
+//        Loop going through the cells of maze.
         Simple cell was extended to the 4x4 points.
         [][][][]
         [][][][]

@@ -30,7 +30,13 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.DirectionalLightShadowFilter;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.util.SkyFactory;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import jsproject.Map;
+import jsproject.ParticleWithTimer;
 
 public class Game extends SimpleApplication
               implements ActionListener {
@@ -55,6 +61,8 @@ public class Game extends SimpleApplication
     private Geometry mark;
     private Node shootables;
     private ParticleEmitter debrisEffect;
+    private List<ParticleWithTimer> particles;
+    
 
     //Vectors for fog parameters: distance, density
     private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -94,6 +102,8 @@ public class Game extends SimpleApplication
 //    viewPort.addProcessor(fpp);
 //    rootNode.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(shootables);
+        
+        particles = Collections.synchronizedList(new ArrayList<ParticleWithTimer>());
 
     }
 
@@ -173,6 +183,15 @@ public class Game extends SimpleApplication
             lighter.setPosition(new Vector3f(loc.x, loc.y, loc.z));
         }
         //labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
+        
+        Iterator<ParticleWithTimer> it = particles.iterator();
+       while(it.hasNext()){
+           ParticleWithTimer p = it.next();
+            if(p.expired){
+                rootNode.detachChild(p.particle);
+                it.remove();
+            }
+       }
 
     }
 
@@ -276,21 +295,20 @@ public class Game extends SimpleApplication
         /**
          * Explosion effect. Uses Texture from jme3-test-data library!
          */
-        debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
-        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
-        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
-        debrisEffect.setMaterial(debrisMat);
-        debrisEffect.setImagesX(3);
-        debrisEffect.setImagesY(3);
-        debrisEffect.setRotateSpeed(5);
-        debrisEffect.setSelectRandomImage(true);
-        debrisEffect.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 6, 0));
-        debrisEffect.setStartColor(ColorRGBA.Gray);
-        debrisEffect.setEndColor(ColorRGBA.Cyan);
-        debrisEffect.setGravity(0f, 6f, 0f);
-        debrisEffect.getParticleInfluencer().setVelocityVariation(.90f);
-        debrisEffect.emitParticles(1);
-
+//        debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
+//        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+//        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
+//        debrisEffect.setMaterial(debrisMat);
+//        debrisEffect.setImagesX(3);
+//        debrisEffect.setImagesY(3);
+//        debrisEffect.setRotateSpeed(5);
+//        debrisEffect.setSelectRandomImage(true);
+//        debrisEffect.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 6, 0));
+//        debrisEffect.setStartColor(ColorRGBA.Gray);
+//        debrisEffect.setEndColor(ColorRGBA.Cyan);
+//        debrisEffect.setGravity(0f, 6f, 0f);
+//        debrisEffect.getParticleInfluencer().setVelocityVariation(.90f);
+//        debrisEffect.emitParticles(1);
     }
 
     private ActionListener actionListener = new ActionListener() {
@@ -323,15 +341,14 @@ public class Game extends SimpleApplication
 
                         CollisionResult closest = results.getClosestCollision();
                         mark.setLocalTranslation(closest.getContactPoint());
-                        debrisEffect.setLocalTranslation(closest.getContactPoint());
-                        rootNode.attachChild(debrisEffect);
-                        rootNode.attachChild(mark);
-                        debrisEffect.killAllParticles();
+                        ParticleWithTimer particle;
+                        particle = new ParticleWithTimer(3000, rootNode, assetManager);
+                        particles.add(particle);
+                        particle.particle.setLocalTranslation(closest.getContactPoint());
+                        rootNode.attachChild(mark);       
                     } else {
                         // No hits
                         rootNode.detachChild(mark);
-                        debrisEffect.killAllParticles();
-                        rootNode.detachChild(debrisEffect);
 
                     }
                 }
