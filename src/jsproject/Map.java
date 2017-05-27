@@ -12,6 +12,7 @@ import com.jme3.material.Material;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
@@ -173,8 +174,9 @@ public class Map {
 
         createBorder(0.5f, 3f, M.length * 2 + 5, -5, 0, M.length * 2);
         createBorder(0.5f, 3f, M.length * 2 + 5, M.length * 4 + 5, 0, M.length * 2);
-        createObstacle(-2, -2, -2);
-        createObstacle(-2, -2, 6);
+        createObstacle(-2, -2, -2, 4f, 1.5f, 1.5f, 1);
+        createObstacle(-2, -2, 6, 4f, 1.5f, 1.5f, 1);
+        createObstacle(-2, -2, 4, 0.5f, 0.5f, 0.5f, 1);
 
 //        just for testing shooting
 //        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 2, 0, 2));
@@ -329,24 +331,26 @@ public class Map {
         //wallBox.geom.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         wallBox.addMatText(mat, dirt);
         wallBox.addPhysics();
+        wallBox.getGeometry().setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
 
     }
 
     /*
     do zmiany
      */
-    private void createObstacle(float locx, float locy, float locz) {
+    private void createObstacle(float locx, float locy, float locz, float scale, float cx, float cy, int c) {
         Spatial tree = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
         //Material mat_default = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
         //tree.setMaterial(mat_default);
         tree.setLocalTranslation(locx, locy, locz);
-        tree.setLocalScale(4f);
+        tree.setLocalScale(scale);
         tree.rotate(0, 15, 0);
-        CapsuleCollisionShape shape = new CapsuleCollisionShape(1.5f, 1.5f, 1);
+        CapsuleCollisionShape shape = new CapsuleCollisionShape(cx, cy, c);
+        tree.setQueueBucket(Bucket.Transparent); // transparent leaves
 
         RigidBodyControl body = new RigidBodyControl(shape, 0);
         tree.addControl(body);
-        tree.setShadowMode(RenderQueue.ShadowMode.Cast);
+        tree.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         bulletAppState.getPhysicsSpace().add(body);
         //rootNode.attachChild(tree);
         shootables.attachChild(tree);
@@ -363,6 +367,7 @@ public class Map {
 
         gift.addMatText(mat, dirt);
         gift.addPhysics(1, 1, 1);
+        gift.getGeometry().setShadowMode(RenderQueue.ShadowMode.Cast);
 
     }
 

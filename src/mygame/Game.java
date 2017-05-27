@@ -17,20 +17,27 @@ import com.jme3.math.Vector3f;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.PointLight;
+import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FogFilter;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
+import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.DirectionalLightShadowFilter;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.PointLightShadowRenderer;
+import com.jme3.shadow.SpotLightShadowRenderer;
 import com.jme3.util.SkyFactory;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
@@ -56,7 +63,7 @@ public class Game extends SimpleApplication
     private Vector3f camLeft = new Vector3f();
     private FilterPostProcessor fpp;
     private FogFilter fogFilter;
-    private PointLight lighter;
+    private SpotLight torch;
     private DirectionalLight sun = new DirectionalLight();
     private DirectionalLightShadowRenderer dlsr;
     private final int SHADOWMAP_SIZE = 2048;
@@ -64,9 +71,11 @@ public class Game extends SimpleApplication
     private BitmapText ch;
     private Geometry mark;
     private Node shootables;
+    private Geometry sphereGeometry;
+    private Node playerNode;
     private ParticleEmitter debrisEffect;
     private List<ParticleWithTimer> particles;
-    private static float lightCounter=0;
+    private static float lightCounter = 0;
 
     //Vectors for fog parameters: distance, density
     private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -75,12 +84,12 @@ public class Game extends SimpleApplication
     //Size of Maze. Size of map depends on this value.
     private static int MazeSize = 10;
     private Spatial plModel;
-    
+//    private Node plLight;
+
     public static void main(String[] args) {
         Game app = new Game();
         app.start();
     }
-    
 
     @Override
     public void simpleInitApp() {
@@ -93,11 +102,11 @@ public class Game extends SimpleApplication
         stateManager.attach(bulletAppState);
         flyCam.setMoveSpeed(10);
         setUpKeys();
+        generatePlayer(-2, 5, 2);
         generateLight();
         createFog();
         labirynt = new Map(MazeSize, MazeSize, assetManager, rootNode, bulletAppState, shootables);
         labirynt.buildMap();
-        generatePlayer(-2, 5, 2);
         getRootNode().attachChild(SkyFactory.createSky(getAssetManager(), "Textures/Sky/Bright/BrightSky.dds", SkyFactory.EnvMapType.CubeMap));
 
         rootNode.attachChild(shootables);
@@ -179,10 +188,18 @@ public class Game extends SimpleApplication
             player.setWalkDirection(walkDirection);
             cam.setLocation(player.getPhysicsLocation());
             Vector3f loc = player.getPhysicsLocation();
-            lighter.setPosition(new Vector3f(loc.x - 20, loc.y + 10, loc.z - 20));//change it, create player node and then change blah blah blah
+            Vector3f dir = cam.getDirection();
+            double angle = Math.atan2(dir.x, dir.z) + Math.PI / 6;
+//            System.out.println("dddd "+angle);
+            torch.setPosition(loc.add(new Vector3f(.9f * (float) (Math.sin(angle)), .3f, .9f * (float) (Math.cos(angle)))));
+            torch.setDirection(dir);
+
+//            sphereGeometry.setLocalTranslation(loc.add(new Vector3f(.9f*(float)(Math.sin(angle)),.3f,.9f*(float)(Math.cos(angle)))));//comment later
+//            playerNode.getLocalTranslation().set(loc);
+//            playerNode.setLocalRotation(new Quaternion(dir.x, dir.y, dir.z, 0));
             labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
         }
-        circleLight();
+//        circleLight();
 
         Iterator<ParticleWithTimer> it = particles.iterator();
         while (it.hasNext()) {
@@ -192,6 +209,8 @@ public class Game extends SimpleApplication
                 it.remove();
             }
         }
+//        System.out.println("sphere loc: " + sphereGeometry.getLocalTranslation());
+//        System.out.println("playerNode loc: " + playerNode.getLocalTranslation());
 
     }
 
@@ -205,12 +224,17 @@ public class Game extends SimpleApplication
         player.setGravity(40);
         player.setPhysicsLocation(new Vector3f(locx, locy, locz));
         bulletAppState.getPhysicsSpace().add(player);
-        generatePlayerModel(locx,locz);
+        generatePlayerModel(locx, locz);
+
+//        playerNode = new Node("Player Node");
+//        playerNode.setLocalTranslation(player.getPhysicsLocation());
+//        rootNode.attachChild(playerNode);
     }
-    private void generatePlayerModel(float locx, float locz){
+
+    private void generatePlayerModel(float locx, float locz) {
         plModel = assetManager.loadModel("Models/Ninja/Ninja.mesh.xml");
         plModel.scale(0.02f);
-        plModel.setLocalTranslation(locx,0, locz);
+        plModel.setLocalTranslation(locx, 0, locz);
         //rootNode.attachChild(plModel);
     }
 
@@ -221,30 +245,55 @@ public class Game extends SimpleApplication
          */
 
         sun.setDirection(new Vector3f(1, -1, 1));
-        lighter = new PointLight(new Vector3f(), 100);
-        rootNode.addLight(lighter);
-
-        dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
-        dlsr.setLight(sun);
-        dlsr.setShadowIntensity(0.5f);
-        dlsr.setShadowZExtend(5f);
-        viewPort.addProcessor(dlsr);
+        sun.setColor(ColorRGBA.White.mult(.3f));
         rootNode.addLight(sun);
+        /**
+         * A white ambient light source.
+         */
+        AmbientLight ambient = new AmbientLight();
+        ambient.setColor(ColorRGBA.White.mult(.3f));
+        rootNode.addLight(ambient);
 
+        torch = new SpotLight(new Vector3f(), new Vector3f());
+        torch.setSpotRange(3);
+        torch.setSpotInnerAngle((float) Math.PI / 8);
+        torch.setSpotOuterAngle((float) (Math.PI / 4));
+
+        SpotLightShadowRenderer slsr = new SpotLightShadowRenderer(assetManager, SHADOWMAP_SIZE);
+        slsr.setLight(torch);
+        viewPort.addProcessor(slsr);
+
+        //checking if working
+//       Sphere sphere = new Sphere(8, 8, .1f);
+//        sphereGeometry = new Geometry("Sphere", sphere);
+//        sphereGeometry.setMaterial(assetManager.loadMaterial("Common/Materials/WhiteColor.j3m"));
+//        sphereGeometry.setLocalTranslation(player.getPhysicsLocation().add(new Vector3f(0,3,0)));
+//        rootNode.attachChild(sphereGeometry);
+        //camera node
+//        cameraNode = new CameraNode("Camera Node", cam);
+//        cameraNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+//        
+//        cameraNode.attachChild(sphereGeometry);
+//        rootNode.attachChild(cameraNode);
+//        plLight.attachChild(sphereGeometry)
+//        dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
+//        dlsr.setLight(sun);
+//        dlsr.setShadowIntensity(0.5f);
+//        dlsr.setShadowZExtend(5f);
+//        viewPort.addProcessor(dlsr);
     }
-    
-private void circleLight(){
-    float x;
-    float z;
-    x= 5+(float)cos(lightCounter)*20;
-    z= 5+(float)sin(lightCounter)*20;
-    lightCounter=lightCounter+0.1f;
-    
-    
-    sun.setDirection(new Vector3f(x,-1,z));
-}
 
-private void turnDebugMode(boolean par) {
+//private void circleLight(){
+//    float x;
+//    float z;
+//    x= 5+(float)cos(lightCounter)*20;
+//    z= 5+(float)sin(lightCounter)*20;
+//    lightCounter=lightCounter+0.1f;
+//    
+//    
+//    sun.setDirection(new Vector3f(x,-1,z));
+//}
+    private void turnDebugMode(boolean par) {
         if (par) {
             /*
             During debug mode:
@@ -253,13 +302,15 @@ private void turnDebugMode(boolean par) {
             -turn off fog
              */
             rootNode.addLight(sun);
-            rootNode.removeLight(lighter);
-            dlsr.setShadowIntensity(0);
+//            rootNode.removeLight(lighter);
+            rootNode.removeLight(torch);
+//            dlsr.setShadowIntensity(0);
             cam.setLocation(new Vector3f(MazeSize * 2, MazeSize * 2 + 20, MazeSize * 2));
             cam.lookAt(new Vector3f(MazeSize * 2, 0, MazeSize * 2), new Vector3f(0, 1, 0));
             changeFogParams(noFog);
             guiNode.detachChild(ch);
-            plModel.setLocalTranslation(player.getPhysicsLocation().x, -1.5f, player.getPhysicsLocation().z);
+            //plModel.setLocalTranslation(player.getPhysicsLocation().x, -1.5f, player.getPhysicsLocation().z);
+            plModel.lookAt(player.getPhysicsLocation(), camDir);
             rootNode.attachChild(plModel);
 
         } else {
@@ -269,9 +320,10 @@ private void turnDebugMode(boolean par) {
             -turn on point light
             -turn on fog
              */
-            rootNode.addLight(lighter);
+//            rootNode.addLight(lighter);
+            rootNode.addLight(torch);
             rootNode.removeLight(sun);
-            dlsr.setShadowIntensity(0.5f);
+//            dlsr.setShadowIntensity(0.5f);
             cam.lookAtDirection(camDir, new Vector3f(0, 1, 0));
             changeFogParams(strongFog);
             guiNode.attachChild(ch);
