@@ -4,18 +4,25 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.LoopMode;
 import com.jme3.asset.AssetManager;
+import com.jme3.asset.TextureKey;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState.BlendMode;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.util.TangentBinormalGenerator;
 import java.awt.Point;
 import static java.lang.Math.abs;
 import java.util.ArrayList;
@@ -176,7 +183,10 @@ public class Map {
         createBorder(0.5f, 3f, M.length * 2 + 5, M.length * 4 + 5, 0, M.length * 2);
         createObstacle(-2, -2, -2, 4f, 1.5f, 1.5f, 1);
         createObstacle(-2, -2, 6, 4f, 1.5f, 1.5f, 1);
-        createObstacle(-2, -2, 4, 0.5f, 0.5f, 0.5f, 1);
+        createObstacle(40, -2, 37.5f, 4f, 1.5f, 1.5f, 1);
+        
+//        createObstacle(-2, -2, 4, 0.5f, 0.5f, 0.5f, 1);
+//        createGift(-2, 0, 4);
 
 //        just for testing shooting
 //        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 2, 0, 2));
@@ -288,17 +298,15 @@ public class Map {
         walls.addMatText(mat, dirt);
         walls.addPhysics();
         Wall.add(walls);
-        
-        
-        //WallBrickPos.add(new float[]{locx,locz});
 
+        //WallBrickPos.add(new float[]{locx,locz});
     }
 
     /*
     Creation of the ground. Its size depends on size of map.
      */
     private void createGround() {
-         ground = new MapObject(M.length * 2 + 5, 0.5f, M.length * 2 + 5,
+        ground = new MapObject(M.length * 2 + 5, 0.5f, M.length * 2 + 5,
                       M.length * 2, -2f, M.length * 2,
                       bulletAppState, rootNode);
 
@@ -357,18 +365,32 @@ public class Map {
     }
 
     private void createGift(float locx, float locy, float locz) {
-        MapObject gift = new MapObject(50, 50, 1,
-                      locx, locy, locz,
-                      bulletAppState, rootNode);
-        Material mat = new Material(assetManager,
-                      "Common/MatDefs/Light/Lighting.j3md");
-        Texture dirt = assetManager.loadTexture(
-                      "Textures/Terrain/Pond/Pond.jpg");
-
-        gift.addMatText(mat, dirt);
-        gift.addPhysics(1, 1, 1);
+        MapObject gift = new MapObject(30, 30, 0.4f, locx, locy, locz, bulletAppState, rootNode);
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setFloat("Shininess", 100f);
+        TextureKey normal = new TextureKey("Models/HoverTank/tank_normals.png", false);
+        TangentBinormalGenerator.generate(gift.getGeometry());
+        mat.setTexture("NormalMap", assetManager.loadTexture(normal));
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Diffuse", ColorRGBA.Gray);
+        gift.getGeometry().setMaterial(mat);
+        gift.addPhysics(0.2f, 0.2f, 1);
         gift.getGeometry().setShadowMode(RenderQueue.ShadowMode.Cast);
 
+//        Texture dirt = assetManager.loadTexture(
+//                      "Textures/Terrain/Pond/Pond.jpg");
+//        mat.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg"));
+//        mat.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/grass.jpg"));
+//        dirt.setWrap(Texture.WrapMode.Repeat);
+//        mat.setTexture("DiffuseMap", dirt);
+//        mat.setColor("Ambient", ColorRGBA.Green);
+//        sphereGeo.setMaterial(sphereMat);
+//        rootNode.attachChild(sphereGeo);
+//        Sphere sphereMesh = new Sphere(32, 32, 1f);
+//        Geometry sphereGeo = new Geometry("Colored lit sphere", sphereMesh);
+//        Material sphereMat = new Material(assetManager,
+//                      "Common/MatDefs/Light/Lighting.j3md");
+//        gift.addMatText(mat, dirt);
     }
 
     public void moveGolems(float playerLocX, float playerLocZ) {
@@ -378,20 +400,21 @@ public class Map {
 
         }
     }
-    
-    public void CollisionEnemy(Enemy golemEnemy){
-            for(MapObject WallBrick : Wall)
-            {
-                if((abs(WallBrick.getLocation().x-golemEnemy.getGolemLocation().x)<1f)
-                    ||(abs(WallBrick.getLocation().z-golemEnemy.getGolemLocation().z)<1f)){golemEnemy.getGolemCollision(WallBrick.getBoundingBox());}
- 
+
+    public void CollisionEnemy(Enemy golemEnemy) {
+        for (MapObject WallBrick : Wall) {
+            if ((abs(WallBrick.getLocation().x - golemEnemy.getGolemLocation().x) < 1f)
+                          || (abs(WallBrick.getLocation().z - golemEnemy.getGolemLocation().z) < 1f)) {
+                golemEnemy.getGolemCollision(WallBrick.getBoundingBox());
             }
+
+        }
 
     }
 
     private List<Enemy> ArmyOfEnemies;
     private List<MapObject> Wall;
-    
+
     private Cell[][] M;
     private AssetManager assetManager;
     private Node rootNode;
@@ -402,7 +425,7 @@ public class Map {
     private AnimControl control;
     private Boolean flag = true;
     private Node shootables;
-    
+
     private MapObject ground;
     private MapObject walls;
 

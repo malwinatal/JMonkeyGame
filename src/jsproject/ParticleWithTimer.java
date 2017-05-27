@@ -15,10 +15,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import com.jme3.scene.Node;
 
-/**
- *
- * @author Malwina
- */
 public class ParticleWithTimer {
 
     public ParticleEmitter particle;

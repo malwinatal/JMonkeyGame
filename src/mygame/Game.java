@@ -190,10 +190,9 @@ public class Game extends SimpleApplication
             Vector3f loc = player.getPhysicsLocation();
             Vector3f dir = cam.getDirection();
             double angle = Math.atan2(dir.x, dir.z) + Math.PI / 6;
-//            System.out.println("dddd "+angle);
             torch.setPosition(loc.add(new Vector3f(.9f * (float) (Math.sin(angle)), .3f, .9f * (float) (Math.cos(angle)))));
             torch.setDirection(dir);
-
+//            System.out.println("dddd "+angle);
 //            sphereGeometry.setLocalTranslation(loc.add(new Vector3f(.9f*(float)(Math.sin(angle)),.3f,.9f*(float)(Math.cos(angle)))));//comment later
 //            playerNode.getLocalTranslation().set(loc);
 //            playerNode.setLocalRotation(new Quaternion(dir.x, dir.y, dir.z, 0));
@@ -309,8 +308,8 @@ public class Game extends SimpleApplication
             cam.lookAt(new Vector3f(MazeSize * 2, 0, MazeSize * 2), new Vector3f(0, 1, 0));
             changeFogParams(noFog);
             guiNode.detachChild(ch);
-            //plModel.setLocalTranslation(player.getPhysicsLocation().x, -1.5f, player.getPhysicsLocation().z);
-            plModel.lookAt(player.getPhysicsLocation(), camDir);
+            plModel.setLocalTranslation(player.getPhysicsLocation().x, -1.5f, player.getPhysicsLocation().z);
+//            plModel.lookAt(player.getPhysicsLocation(), camDir);
             rootNode.attachChild(plModel);
 
         } else {
@@ -408,6 +407,9 @@ public class Game extends SimpleApplication
                         String hit = results.getCollision(i).getGeometry().getName();
                         System.out.println("* Collision #" + i);
                         System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
+//                        Spatial spatial = shootables.getChild(hit);
+//                        if(spatial!=null) shootables.detachChild(spatial);
+//                        else System.out.println("null");
                     }
                     // 5. Use the results (we mark the hit object)
                     if (results.size() > 0) {
@@ -419,6 +421,7 @@ public class Game extends SimpleApplication
                         particles.add(particle);
                         particle.particle.setLocalTranslation(closest.getContactPoint());
                         rootNode.attachChild(mark);
+                        
                     } else {
                         // No hits
                         rootNode.detachChild(mark);

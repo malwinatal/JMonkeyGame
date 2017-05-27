@@ -32,9 +32,8 @@ public class MapObject {
         geom.setLocalTranslation(locX, locY, locZ);
         this.bullet = bullet;
         this.rootNode = rootNode;
-        
-         bs = new BoundingBox(new Vector3f(locX,locY,locZ),0.5f*sizeX,sizeY,0.5f*sizeZ);
 
+        bs = new BoundingBox(new Vector3f(locX, locY, locZ), 0.5f * sizeX, sizeY, 0.5f * sizeZ);
 
     }
 
@@ -95,19 +94,19 @@ public class MapObject {
         geom.setMaterial(mat);
 
     }
-    
-    public Geometry getGeometry(){
+
+    public Geometry getGeometry() {
         return geom;
     }
 
-    public BoundingBox getBoundingBox(){
+    public BoundingBox getBoundingBox() {
         return bs;
     }
-    
-    public Vector3f getLocation(){
+
+    public Vector3f getLocation() {
         return geom.getLocalTranslation();
     }
-    
+
     private Box b;
     private Sphere s;
     private Geometry geom;
