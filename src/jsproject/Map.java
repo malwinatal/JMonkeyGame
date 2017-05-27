@@ -184,10 +184,9 @@ public class Map {
         createObstacle(-2, -2, -2, 4f, 1.5f, 1.5f, 1);
         createObstacle(-2, -2, 6, 4f, 1.5f, 1.5f, 1);
         createObstacle(40, -2, 37.5f, 4f, 1.5f, 1.5f, 1);
-        
+
 //        createObstacle(-2, -2, 4, 0.5f, 0.5f, 0.5f, 1);
 //        createGift(-2, 0, 4);
-
 //        just for testing shooting
 //        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 2, 0, 2));
 

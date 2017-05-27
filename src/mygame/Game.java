@@ -76,6 +76,7 @@ public class Game extends SimpleApplication
     private ParticleEmitter debrisEffect;
     private List<ParticleWithTimer> particles;
     private static float lightCounter = 0;
+    private String hit;
 
     //Vectors for fog parameters: distance, density
     private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -404,24 +405,26 @@ public class Game extends SimpleApplication
                         // For each hit, we know distance, impact point, name of geometry.
                         float dist = results.getCollision(i).getDistance();
                         Vector3f pt = results.getCollision(i).getContactPoint();
-                        String hit = results.getCollision(i).getGeometry().getName();
+                        hit = results.getCollision(i).getGeometry().getName();
                         System.out.println("* Collision #" + i);
                         System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
 //                        Spatial spatial = shootables.getChild(hit);
 //                        if(spatial!=null) shootables.detachChild(spatial);
 //                        else System.out.println("null");
+
                     }
                     // 5. Use the results (we mark the hit object)
                     if (results.size() > 0) {
 
                         CollisionResult closest = results.getClosestCollision();
                         mark.setLocalTranslation(closest.getContactPoint());
+                        shootables.detachChild(shootables.getChild(hit).getParent());
                         ParticleWithTimer particle;
                         particle = new ParticleWithTimer(3000, rootNode, assetManager);
                         particles.add(particle);
                         particle.particle.setLocalTranslation(closest.getContactPoint());
                         rootNode.attachChild(mark);
-                        
+
                     } else {
                         // No hits
                         rootNode.detachChild(mark);
