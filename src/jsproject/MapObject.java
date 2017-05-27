@@ -1,5 +1,6 @@
 package jsproject;
 
+import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -31,6 +32,9 @@ public class MapObject {
         geom.setLocalTranslation(locX, locY, locZ);
         this.bullet = bullet;
         this.rootNode = rootNode;
+        
+         bs = new BoundingBox(new Vector3f(locX,locY,locZ),0.5f*sizeX,sizeY,0.5f*sizeZ);
+
 
     }
 
@@ -91,13 +95,26 @@ public class MapObject {
         geom.setMaterial(mat);
 
     }
+    
+    public Geometry getGeometry(){
+        return geom;
+    }
 
+    public BoundingBox getBoundingBox(){
+        return bs;
+    }
+    
+    public Vector3f getLocation(){
+        return geom.getLocalTranslation();
+    }
+    
     private Box b;
     private Sphere s;
-    public Geometry geom;
+    private Geometry geom;
     private CollisionShape shape;
     private RigidBodyControl body;
     private BulletAppState bullet;
     private Node rootNode;
+    private BoundingBox bs;
 
 }

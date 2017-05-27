@@ -16,6 +16,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import java.awt.Point;
+import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -41,6 +42,7 @@ public class Map {
         this.assetManager = manager;
         this.shootables = shootables;
         ArmyOfEnemies = new ArrayList();
+        Wall = new ArrayList();
     }
 
     //Method which generate random Maze.
@@ -178,7 +180,7 @@ public class Map {
 //        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager, 2, 0, 2));
 
         /*
-//        Loop going through the cells of maze.
+        Loop going through the cells of maze.
         Simple cell was extended to the 4x4 points.
         [][][][]
         [][][][]
@@ -271,7 +273,7 @@ public class Map {
     Parameters specifies location of the box
      */
     void createWallBox(float locx, float locy, float locz) {
-        MapObject wallBox = new MapObject(0.5f, 3f, 0.5f,
+        walls = new MapObject(0.5f, 3f, 0.5f,
                       locx, locy, locz,
                       bulletAppState, rootNode);
 
@@ -280,9 +282,13 @@ public class Map {
         Texture dirt = assetManager.loadTexture(
                       "Textures/Terrain/splat/dirt.jpg");
 
-        wallBox.geom.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
-        wallBox.addMatText(mat, dirt);
-        wallBox.addPhysics();
+        walls.getGeometry().setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
+        walls.addMatText(mat, dirt);
+        walls.addPhysics();
+        Wall.add(walls);
+        
+        
+        //WallBrickPos.add(new float[]{locx,locz});
 
     }
 
@@ -290,7 +296,7 @@ public class Map {
     Creation of the ground. Its size depends on size of map.
      */
     private void createGround() {
-        MapObject ground = new MapObject(M.length * 2 + 5, 0.5f, M.length * 2 + 5,
+         ground = new MapObject(M.length * 2 + 5, 0.5f, M.length * 2 + 5,
                       M.length * 2, -2f, M.length * 2,
                       bulletAppState, rootNode);
 
@@ -298,7 +304,7 @@ public class Map {
         Texture grass = assetManager.loadTexture(
                       "Textures/Terrain/splat/grass.jpg");
 
-        ground.geom.setShadowMode(RenderQueue.ShadowMode.Receive);
+        ground.getGeometry().setShadowMode(RenderQueue.ShadowMode.Receive);
         ground.addMatText(mat, grass, new Vector2f(10f, 10f));
         ground.addPhysics();
 
@@ -340,7 +346,7 @@ public class Map {
 
         RigidBodyControl body = new RigidBodyControl(shape, 0);
         tree.addControl(body);
-        tree.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
+        tree.setShadowMode(RenderQueue.ShadowMode.Cast);
         bulletAppState.getPhysicsSpace().add(body);
         //rootNode.attachChild(tree);
         shootables.attachChild(tree);
@@ -362,49 +368,25 @@ public class Map {
 
     public void moveGolems(float playerLocX, float playerLocZ) {
         for (Enemy golemEnemy : ArmyOfEnemies) {
+            golemEnemy.moveGolem(playerLocX, playerLocZ);
+            CollisionEnemy(golemEnemy);
 
-            Vector3f golemLoc = golemEnemy.getGolemLocation();
-
-            boolean possibleDirections[] = new boolean[4];
-            possibleDirections[0] = false;
-            possibleDirections[1] = false;
-            possibleDirections[2] = false;
-            possibleDirections[3] = false;
-            int MazeX = Math.round((golemLoc.x - 1.5f) / 4);
-            int MazeY = Math.round((golemLoc.z - 1.5f) / 4);
-
-            if (MazeX >= 0 && MazeY >= 0 && MazeX < M.length && MazeY < M.length) {
-
-//                if(M[M.length-(MazeX+1)][MazeY].left==1){possibleDirections[0]=true;}
-//                if(M[M.length-(MazeX+1)][MazeY].right==1){possibleDirections[1]=true;}
-//                if(M[M.length-(MazeX+1)][MazeY].down==1){possibleDirections[2]=true;}
-//                if(M[M.length-(MazeX+1)][MazeY].up==1){possibleDirections[3]=true;}
-                if (M[M.length - (MazeX + 1)][MazeY].left == 1) {
-                    possibleDirections[0] = true;
-                }
-                if (M[M.length - (MazeX + 1)][MazeY].right == 1) {
-                    possibleDirections[1] = true;
-                }
-                if (M[M.length - (MazeX + 1)][MazeY].down == 1) {
-                    possibleDirections[2] = true;
-                }
-                if (M[M.length - (MazeX + 1)][MazeY].up == 1) {
-                    possibleDirections[3] = true;
-                }
-
+        }
+    }
+    
+    public void CollisionEnemy(Enemy golemEnemy){
+            for(MapObject WallBrick : Wall)
+            {
+                if((abs(WallBrick.getLocation().x-golemEnemy.getGolemLocation().x)<1f)
+                    ||(abs(WallBrick.getLocation().z-golemEnemy.getGolemLocation().z)<1f)){golemEnemy.getGolemCollision(WallBrick.getBoundingBox());}
+ 
             }
 
-            System.out.print(golemLoc + " ");
-            System.out.print(M.length - (MazeX + 1) + " ");
-            System.out.print(MazeY + " ");
-            System.out.print(Arrays.toString(possibleDirections) + " ");
-            golemEnemy.runGolemRun(playerLocX, playerLocZ, possibleDirections);
-            System.out.print("\n");
-        }
     }
 
     private List<Enemy> ArmyOfEnemies;
-
+    private List<MapObject> Wall;
+    
     private Cell[][] M;
     private AssetManager assetManager;
     private Node rootNode;
@@ -415,5 +397,8 @@ public class Map {
     private AnimControl control;
     private Boolean flag = true;
     private Node shootables;
+    
+    private MapObject ground;
+    private MapObject walls;
 
 }
