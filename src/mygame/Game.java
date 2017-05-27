@@ -29,6 +29,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.DirectionalLightShadowFilter;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
+import com.jme3.shadow.PointLightShadowRenderer;
 import com.jme3.util.SkyFactory;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -179,7 +180,7 @@ public class Game extends SimpleApplication
             player.setWalkDirection(walkDirection);
             cam.setLocation(player.getPhysicsLocation());
             Vector3f loc = player.getPhysicsLocation();
-            lighter.setPosition(new Vector3f(loc.x, loc.y, loc.z));
+            lighter.setPosition(new Vector3f(loc.x - 20, loc.y + 10, loc.z - 20));//change it, create player node and then change blah blah blah
         }
         //labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
 
@@ -216,12 +217,16 @@ public class Game extends SimpleApplication
         lighter = new PointLight(new Vector3f(), 100);
         rootNode.addLight(lighter);
 
-        dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
-        dlsr.setLight(sun);
-        dlsr.setShadowIntensity(0.5f);
-        dlsr.setShadowZExtend(5f);
-        viewPort.addProcessor(dlsr);
-        rootNode.addLight(sun);
+//        dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
+//        dlsr.setLight(sun);
+//        dlsr.setShadowIntensity(0.5f);
+//        dlsr.setShadowZExtend(5f);
+//        viewPort.addProcessor(dlsr);
+//        rootNode.addLight(sun);
+        PointLightShadowRenderer plsr = new PointLightShadowRenderer(assetManager, 1024);
+        plsr.setLight(lighter);
+        viewPort.addProcessor(plsr);
+
     }
 
     private void turnDebugMode(boolean par) {

@@ -340,7 +340,7 @@ public class Map {
 
         RigidBodyControl body = new RigidBodyControl(shape, 0);
         tree.addControl(body);
-        tree.setShadowMode(RenderQueue.ShadowMode.Cast);
+        tree.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         bulletAppState.getPhysicsSpace().add(body);
         //rootNode.attachChild(tree);
         shootables.attachChild(tree);
