@@ -222,7 +222,7 @@ public class Game extends SimpleApplication
 //        dlsr.setShadowIntensity(0.5f);
 //        dlsr.setShadowZExtend(5f);
 //        viewPort.addProcessor(dlsr);
-//        rootNode.addLight(sun);
+        rootNode.addLight(sun);
         PointLightShadowRenderer plsr = new PointLightShadowRenderer(assetManager, 1024);
         plsr.setLight(lighter);
         viewPort.addProcessor(plsr);
@@ -239,7 +239,7 @@ public class Game extends SimpleApplication
              */
             rootNode.addLight(sun);
             rootNode.removeLight(lighter);
-            dlsr.setShadowIntensity(0);
+//            dlsr.setShadowIntensity(0);
             cam.setLocation(new Vector3f(MazeSize * 2, MazeSize * 2 + 20, MazeSize * 2));
             cam.lookAt(new Vector3f(MazeSize * 2, 0, MazeSize * 2), new Vector3f(0, 1, 0));
             changeFogParams(noFog);
@@ -254,7 +254,7 @@ public class Game extends SimpleApplication
              */
             rootNode.addLight(lighter);
             rootNode.removeLight(sun);
-            dlsr.setShadowIntensity(0.5f);
+//            dlsr.setShadowIntensity(0.5f);
             cam.lookAtDirection(camDir, new Vector3f(0, 1, 0));
             changeFogParams(strongFog);
             guiNode.attachChild(ch);
