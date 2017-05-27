@@ -20,12 +20,13 @@ import com.jme3.scene.Node;
  * @author Malwina
  */
 public class ParticleWithTimer {
-   public  ParticleEmitter particle;
-   public Timer timer;
-   public boolean expired = false;
-   
-   public ParticleWithTimer(long duration, final Node rootNode, AssetManager assetManager){
-       particle = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
+
+    public ParticleEmitter particle;
+    private Timer timer;
+    public boolean expired = false;
+
+    public ParticleWithTimer(long duration, Node rootNode, AssetManager assetManager) {
+        particle = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
         Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
         particle.setMaterial(debrisMat);
@@ -40,13 +41,13 @@ public class ParticleWithTimer {
         particle.getParticleInfluencer().setVelocityVariation(.90f);
         particle.emitParticles(1);
         rootNode.attachChild(particle);
-       timer = new Timer();
-       timer.schedule(new TimerTask() {
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
                 expired = true;
             }
         }, duration);
-   }
+    }
 }

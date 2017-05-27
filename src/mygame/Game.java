@@ -62,7 +62,6 @@ public class Game extends SimpleApplication
     private Node shootables;
     private ParticleEmitter debrisEffect;
     private List<ParticleWithTimer> particles;
-    
 
     //Vectors for fog parameters: distance, density
     private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -81,7 +80,7 @@ public class Game extends SimpleApplication
 
         initCrossHairs();
         initMark();
-        initEffect();
+//        initEffect();
         shootables = new Node("Shootables");
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
@@ -102,7 +101,7 @@ public class Game extends SimpleApplication
 //    viewPort.addProcessor(fpp);
 //    rootNode.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(shootables);
-        
+
         particles = Collections.synchronizedList(new ArrayList<ParticleWithTimer>());
 
     }
@@ -183,15 +182,15 @@ public class Game extends SimpleApplication
             lighter.setPosition(new Vector3f(loc.x, loc.y, loc.z));
         }
         //labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
-        
+
         Iterator<ParticleWithTimer> it = particles.iterator();
-       while(it.hasNext()){
-           ParticleWithTimer p = it.next();
-            if(p.expired){
+        while (it.hasNext()) {
+            ParticleWithTimer p = it.next();
+            if (p.expired) {
                 rootNode.detachChild(p.particle);
                 it.remove();
             }
-       }
+        }
 
     }
 
@@ -291,10 +290,10 @@ public class Game extends SimpleApplication
         mark.setMaterial(mark_mat);
     }
 
-    protected void initEffect() {
-        /**
-         * Explosion effect. Uses Texture from jme3-test-data library!
-         */
+//    protected void initEffect() {
+//        /**
+//         * Explosion effect. Uses Texture from jme3-test-data library!
+//         */
 //        debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
 //        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
 //        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
@@ -309,8 +308,7 @@ public class Game extends SimpleApplication
 //        debrisEffect.setGravity(0f, 6f, 0f);
 //        debrisEffect.getParticleInfluencer().setVelocityVariation(.90f);
 //        debrisEffect.emitParticles(1);
-    }
-
+//    }
     private ActionListener actionListener = new ActionListener() {
 
         @Override
@@ -325,7 +323,7 @@ public class Game extends SimpleApplication
                     // DO NOT check collision with the root node, or else ALL collisions will hit the skybox! Always make a separate node for objects you want to collide with.
                     shootables.collideWith(ray, results);
                     // 4. Print the results
-                    
+
                     //nie potrzebne, ale poki co zostawie
                     System.out.println("----- Collisions? " + results.size() + "-----");
                     for (int i = 0; i < results.size(); i++) {
@@ -345,7 +343,7 @@ public class Game extends SimpleApplication
                         particle = new ParticleWithTimer(3000, rootNode, assetManager);
                         particles.add(particle);
                         particle.particle.setLocalTranslation(closest.getContactPoint());
-                        rootNode.attachChild(mark);       
+                        rootNode.attachChild(mark);
                     } else {
                         // No hits
                         rootNode.detachChild(mark);
