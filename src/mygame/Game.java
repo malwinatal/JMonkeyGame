@@ -1,13 +1,14 @@
 package mygame;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.audio.AudioData;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
@@ -18,33 +19,22 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
-import com.jme3.light.PointLight;
 import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Matrix3f;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FogFilter;
-import com.jme3.renderer.queue.RenderQueue.ShadowMode;
-import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.shadow.DirectionalLightShadowFilter;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
-import com.jme3.shadow.PointLightShadowRenderer;
 import com.jme3.shadow.SpotLightShadowRenderer;
 import com.jme3.util.SkyFactory;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import jsproject.Map;
 import jsproject.ParticleWithTimer;
@@ -77,6 +67,7 @@ public class Game extends SimpleApplication
     private List<ParticleWithTimer> particles;
     private static float lightCounter = 0;
     private String hit;
+    private AudioNode audio_gun;
 
     //Vectors for fog parameters: distance, density
     private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -97,7 +88,7 @@ public class Game extends SimpleApplication
 
         initCrossHairs();
         initMark();
-//        initEffect();
+        initAudio();
         shootables = new Node("Shootables");
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
@@ -193,13 +184,8 @@ public class Game extends SimpleApplication
             double angle = Math.atan2(dir.x, dir.z) + Math.PI / 6;
             torch.setPosition(loc.add(new Vector3f(.9f * (float) (Math.sin(angle)), .3f, .9f * (float) (Math.cos(angle)))));
             torch.setDirection(dir);
-//            System.out.println("dddd "+angle);
-//            sphereGeometry.setLocalTranslation(loc.add(new Vector3f(.9f*(float)(Math.sin(angle)),.3f,.9f*(float)(Math.cos(angle)))));//comment later
-//            playerNode.getLocalTranslation().set(loc);
-//            playerNode.setLocalRotation(new Quaternion(dir.x, dir.y, dir.z, 0));
             labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
         }
-//        circleLight();
 
         Iterator<ParticleWithTimer> it = particles.iterator();
         while (it.hasNext()) {
@@ -209,8 +195,6 @@ public class Game extends SimpleApplication
                 it.remove();
             }
         }
-//        System.out.println("sphere loc: " + sphereGeometry.getLocalTranslation());
-//        System.out.println("playerNode loc: " + playerNode.getLocalTranslation());
 
     }
 
@@ -225,17 +209,12 @@ public class Game extends SimpleApplication
         player.setPhysicsLocation(new Vector3f(locx, locy, locz));
         bulletAppState.getPhysicsSpace().add(player);
         generatePlayerModel(locx, locz);
-
-//        playerNode = new Node("Player Node");
-//        playerNode.setLocalTranslation(player.getPhysicsLocation());
-//        rootNode.attachChild(playerNode);
     }
 
     private void generatePlayerModel(float locx, float locz) {
         plModel = assetManager.loadModel("Models/Ninja/Ninja.mesh.xml");
         plModel.scale(0.02f);
         plModel.setLocalTranslation(locx, 0, locz);
-        //rootNode.attachChild(plModel);
     }
 
     private void generateLight() {
@@ -262,37 +241,8 @@ public class Game extends SimpleApplication
         SpotLightShadowRenderer slsr = new SpotLightShadowRenderer(assetManager, SHADOWMAP_SIZE);
         slsr.setLight(torch);
         viewPort.addProcessor(slsr);
-
-        //checking if working
-//       Sphere sphere = new Sphere(8, 8, .1f);
-//        sphereGeometry = new Geometry("Sphere", sphere);
-//        sphereGeometry.setMaterial(assetManager.loadMaterial("Common/Materials/WhiteColor.j3m"));
-//        sphereGeometry.setLocalTranslation(player.getPhysicsLocation().add(new Vector3f(0,3,0)));
-//        rootNode.attachChild(sphereGeometry);
-        //camera node
-//        cameraNode = new CameraNode("Camera Node", cam);
-//        cameraNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
-//        
-//        cameraNode.attachChild(sphereGeometry);
-//        rootNode.attachChild(cameraNode);
-//        plLight.attachChild(sphereGeometry)
-//        dlsr = new DirectionalLightShadowRenderer(assetManager, SHADOWMAP_SIZE, 3);
-//        dlsr.setLight(sun);
-//        dlsr.setShadowIntensity(0.5f);
-//        dlsr.setShadowZExtend(5f);
-//        viewPort.addProcessor(dlsr);
     }
 
-//private void circleLight(){
-//    float x;
-//    float z;
-//    x= 5+(float)cos(lightCounter)*20;
-//    z= 5+(float)sin(lightCounter)*20;
-//    lightCounter=lightCounter+0.1f;
-//    
-//    
-//    sun.setDirection(new Vector3f(x,-1,z));
-//}
     private void turnDebugMode(boolean par) {
         if (par) {
             /*
@@ -302,15 +252,12 @@ public class Game extends SimpleApplication
             -turn off fog
              */
             rootNode.addLight(sun);
-//            rootNode.removeLight(lighter);
             rootNode.removeLight(torch);
-//            dlsr.setShadowIntensity(0);
             cam.setLocation(new Vector3f(MazeSize * 2, MazeSize * 2 + 20, MazeSize * 2));
             cam.lookAt(new Vector3f(MazeSize * 2, 0, MazeSize * 2), new Vector3f(0, 1, 0));
             changeFogParams(noFog);
             guiNode.detachChild(ch);
             plModel.setLocalTranslation(player.getPhysicsLocation().x, -1.5f, player.getPhysicsLocation().z);
-//            plModel.lookAt(player.getPhysicsLocation(), camDir);
             rootNode.attachChild(plModel);
 
         } else {
@@ -320,10 +267,8 @@ public class Game extends SimpleApplication
             -turn on point light
             -turn on fog
              */
-//            rootNode.addLight(lighter);
             rootNode.addLight(torch);
             rootNode.removeLight(sun);
-//            dlsr.setShadowIntensity(0.5f);
             cam.lookAtDirection(camDir, new Vector3f(0, 1, 0));
             changeFogParams(strongFog);
             guiNode.attachChild(ch);
@@ -334,8 +279,7 @@ public class Game extends SimpleApplication
     private void createFog() {
         fpp = new FilterPostProcessor(assetManager);
         viewPort.addProcessor(fpp);
-        //Initialize the FogFilter and
-        //add it to the FilterPostProcesor.
+        //Initialize the FogFilter and add it to the FilterPostProcesor.
         fogFilter = new FogFilter();
         fogFilter.setFogColor(new ColorRGBA(0.05f, 0.05f, 0.05f, 0.05f));
         changeFogParams(strongFog);
@@ -365,41 +309,19 @@ public class Game extends SimpleApplication
         mark.setMaterial(mark_mat);
     }
 
-//    protected void initEffect() {
-//        /**
-//         * Explosion effect. Uses Texture from jme3-test-data library!
-//         */
-//        debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
-//        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
-//        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
-//        debrisEffect.setMaterial(debrisMat);
-//        debrisEffect.setImagesX(3);
-//        debrisEffect.setImagesY(3);
-//        debrisEffect.setRotateSpeed(5);
-//        debrisEffect.setSelectRandomImage(true);
-//        debrisEffect.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 6, 0));
-//        debrisEffect.setStartColor(ColorRGBA.Gray);
-//        debrisEffect.setEndColor(ColorRGBA.Cyan);
-//        debrisEffect.setGravity(0f, 6f, 0f);
-//        debrisEffect.getParticleInfluencer().setVelocityVariation(.90f);
-//        debrisEffect.emitParticles(1);
-//    }
     private ActionListener actionListener = new ActionListener() {
 
         @Override
         public void onAction(String name, boolean keyPressed, float tpf) {
             if (!pause) {
                 if (name.equals("Shoot") && !keyPressed) {
-                    // 1. Reset results list.
-                    CollisionResults results = new CollisionResults();
-                    // 2. Aim the ray from cam loc to cam direction.
-                    Ray ray = new Ray(cam.getLocation(), cam.getDirection());
-                    // 3. Collect intersections between Ray and Shootables in results list.
-                    // DO NOT check collision with the root node, or else ALL collisions will hit the skybox! Always make a separate node for objects you want to collide with.
-                    shootables.collideWith(ray, results);
-                    // 4. Print the results
+                    audio_gun.playInstance();
 
-                    //nie potrzebne, ale poki co zostawie
+                    CollisionResults results = new CollisionResults();
+                    Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+                    shootables.collideWith(ray, results);
+
+                    //nie potrzebne, ale poki co zostawie  - printing the results
                     System.out.println("----- Collisions? " + results.size() + "-----");
                     for (int i = 0; i < results.size(); i++) {
                         // For each hit, we know distance, impact point, name of geometry.
@@ -408,12 +330,7 @@ public class Game extends SimpleApplication
                         hit = results.getCollision(i).getGeometry().getName();
                         System.out.println("* Collision #" + i);
                         System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
-//                        Spatial spatial = shootables.getChild(hit);
-//                        if(spatial!=null) shootables.detachChild(spatial);
-//                        else System.out.println("null");
-
                     }
-                    // 5. Use the results (we mark the hit object)
                     if (results.size() > 0) {
 
                         CollisionResult closest = results.getClosestCollision();
@@ -435,31 +352,12 @@ public class Game extends SimpleApplication
         }
     };
 
-//  protected void CreateTree(){
-//      //creating a tree
-//    Random rand = new Random();
-//    Spatial treeGeo = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
-//    treeGeo.scale(rand.nextInt(5)+3); // make tree bigger
-//    treeGeo.setQueueBucket(Bucket.Transparent); // transparent leaves
-//    treeGeo.rotate(0,rand.nextInt(360),0);
-//    rootNode.attachChild(treeGeo);
-//
-//    Vector3f treeLoc = new Vector3f(0,0,0);
-//    treeLoc.set(-1*rand.nextInt(1000)+500,0,-1*rand.nextInt(1000)+500);
-//    treeLoc.setY(terrain.getHeight(new Vector2f( treeLoc.x, treeLoc.z ) ) -100);
-//    
-//   // TerrainLodControl treecontrol = new TerrainLodControl(treeGeo, getCamera());
-//
-//    
-//    if(treeLoc.y<0){
-//        treeGeo.setLocalTranslation(treeLoc);
-//    }
-//    
-//    CollisionShape treeShape = CollisionShapeFactory.createMeshShape(treeGeo);
-//    RigidBodyControl trees = new RigidBodyControl(treeShape, 0);
-//    //terrain.addControl(control);
-//    treeGeo.addControl(trees);
-//
-//   bulletAppState.getPhysicsSpace().add(treeGeo);
-//  }
+    private void initAudio() {
+        /* gun shot sound is to be triggered by a mouse click. */
+        audio_gun = new AudioNode(assetManager, "Sound/Effects/Gun.wav", AudioData.DataType.Buffer);
+        audio_gun.setPositional(false);
+        audio_gun.setLooping(false);
+        audio_gun.setVolume(2);
+        rootNode.attachChild(audio_gun);
+    }
 }
