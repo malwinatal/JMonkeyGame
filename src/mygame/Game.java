@@ -92,7 +92,7 @@ public class Game extends SimpleApplication
 
         initCrossHairs();
         initMark();
-        env = Environment.Dungeon;//jest jakas roznica????????
+        env = Environment.Dungeon;
         audioRenderer.setEnvironment(env);
         initAudio();
         shootables = new Node("Shootables");
@@ -366,12 +366,14 @@ public class Game extends SimpleApplication
         audioGun.setPositional(false);
         audioGun.setLooping(false);
         audioGun.setVolume(2);
+        audioGun.setReverbEnabled(true);
         rootNode.attachChild(audioGun);
 
         audioAmb = new AudioNode(assetManager, "Sounds/creepy_music.wav", AudioData.DataType.Stream);
         audioAmb.setLooping(true);  // activate continuous playing
         audioAmb.setPositional(false);
         audioAmb.setVolume(0.5f);
+        audioAmb.setReverbEnabled(true);
         rootNode.attachChild(audioAmb);
         audioAmb.play(); // play continuously!
 

@@ -434,19 +434,19 @@ public class Map {
         fireNode.attachChild(fire);
 
         AudioNode audioFire;
-        audioFire = new AudioNode(assetManager, "Sound/Effects/Beep.ogg", AudioData.DataType.Buffer);
+        audioFire = new AudioNode(assetManager, "Sounds/fireFire.wav", AudioData.DataType.Stream);
         fireNode.attachChild(audioFire);
         audioFire.setPositional(true); // Use 3D audio
-        audioFire.setRefDistance(0.5f); // Distance of 50% volume
-        audioFire.setMaxDistance(1000f);
-        audioFire.setInnerAngle(180);
-        audioFire.setOuterAngle(360);
-        audioFire.setDirectional(true);
-        audioFire.setDirection(new Vector3f(audioFire.getPosition().x, audioFire.getPosition().y, audioFire.getPosition().z));
+        audioFire.setRefDistance(0.2f); // Distance of 50% volume
+        audioFire.setMaxDistance(10000f);
+//        audioFire.setInnerAngle(180);
+//        audioFire.setOuterAngle(360);
+//        audioFire.setDirectional(true);
+//        audioFire.setDirection(new Vector3f(audioFire.getPosition().x, audioFire.getPosition().y, audioFire.getPosition().z));
 
-        audioFire.setVolume(5); // Default volume
+        audioFire.setVolume(0.3f); // Default volume
         audioFire.setLooping(true); // play continuously
-
+        audioFire.setReverbEnabled(true);
         System.out.println(audioFire.getPosition().toString());
         audioFire.play(); // play continuously!
 

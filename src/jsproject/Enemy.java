@@ -135,15 +135,17 @@ public class Enemy {
     }
 
     private void makeSound() {
-        audioGolem = new AudioNode(assetManager, "Sound/Effects/Foot steps.ogg", AudioData.DataType.Buffer);
+        audioGolem = new AudioNode(assetManager, "Sounds/monster.wav", AudioData.DataType.Buffer);
         audioGolem.setPositional(true); // Use 3D audio
         audioGolem.setRefDistance(0.5f); // Distance of 50% volume
         audioGolem.setMaxDistance(1000f);
-        audioGolem.setInnerAngle(50);
-        audioGolem.setOuterAngle(120);
-        audioGolem.setDirection(new Vector3f(0, 0, 1));
-        audioGolem.setVolume(5); // Default volume
+        audioGolem.setDirectional(true);
+        audioGolem.setInnerAngle(90);
+        audioGolem.setOuterAngle(240);
+        audioGolem.setDirection(new Vector3f(audioGolem.getPosition().x, audioGolem.getPosition().y, audioGolem.getPosition().z));
+        audioGolem.setVolume(1.5f); // Default volume
         audioGolem.setLooping(true); // play continuously
+        audioGolem.setReverbEnabled(true);
         golem.attachChild(audioGolem);
         audioGolem.play(); // play continuously!
     }
