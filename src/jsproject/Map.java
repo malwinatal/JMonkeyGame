@@ -4,12 +4,17 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
+import com.jme3.audio.AudioData;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
@@ -176,7 +181,7 @@ public class Map {
         createObstacle(-2, -2, -2, 4f, 1.5f, 1.5f, 1);
         createObstacle(-2, -2, 6, 4f, 1.5f, 1.5f, 1);
         createObstacle(40, -2, 37.5f, 4f, 1.5f, 1.5f, 1);
-
+        CreateFire();
 //        createObstacle(-2, -2, 4, 0.5f, 0.5f, 0.5f, 1);
 //        createGift(-2, 0, 4);
 //        just for testing shooting
@@ -400,6 +405,52 @@ public class Map {
 
         }
 
+    }
+
+    private void CreateFire() {
+        createObstacle(38, -1.2f, 37.5f, 0.5f, 0.5f, 0.5f, 1);
+        Node fireNode = new Node();
+        rootNode.attachChild(fireNode);
+        fireNode.move(38, -2, 37.5f);
+        /**
+         * Uses Texture from jme3-test-data library!
+         */
+        ParticleEmitter fire = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 20);
+        Material mat_red = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat_red.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
+
+        fire.setMaterial(mat_red);
+        fire.setImagesX(2);
+        fire.setImagesY(2); // 2x2 texture animation
+        fire.setEndColor(new ColorRGBA(1f, 0f, 0f, 1f));   // red
+        fire.setStartColor(new ColorRGBA(1f, 1f, 0f, 0.5f)); // yellow
+        fire.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
+        fire.setStartSize(1.5f);
+        fire.setEndSize(0.1f);
+        fire.setGravity(0, 0, 0);
+        fire.setLowLife(1f);
+        fire.setHighLife(3f);
+        fire.getParticleInfluencer().setVelocityVariation(0.3f);
+        fireNode.attachChild(fire);
+
+        AudioNode audioFire;
+        audioFire = new AudioNode(assetManager, "Sound/Effects/Beep.ogg", AudioData.DataType.Buffer);
+        fireNode.attachChild(audioFire);
+        audioFire.setPositional(true); // Use 3D audio
+        audioFire.setRefDistance(0.5f); // Distance of 50% volume
+        audioFire.setMaxDistance(1000f);
+        audioFire.setInnerAngle(180);
+        audioFire.setOuterAngle(360);
+        audioFire.setDirectional(true);
+        audioFire.setDirection(new Vector3f(audioFire.getPosition().x, audioFire.getPosition().y, audioFire.getPosition().z));
+
+        audioFire.setVolume(5); // Default volume
+        audioFire.setLooping(true); // play continuously
+
+        System.out.println(audioFire.getPosition().toString());
+        audioFire.play(); // play continuously!
+
+        //TODO dodac swiatlo, zeby bylo pieknie i zmienic dzwiek na ogien
     }
 
     private List<Enemy> ArmyOfEnemies;

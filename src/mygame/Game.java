@@ -1,8 +1,10 @@
 package mygame;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.audio.AudioBuffer;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
+import com.jme3.audio.Environment;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
@@ -67,7 +69,9 @@ public class Game extends SimpleApplication
     private List<ParticleWithTimer> particles;
     private static float lightCounter = 0;
     private String hit;
-    private AudioNode audio_gun;
+    private AudioNode audioGun;
+    private AudioNode audioAmb;
+    public Environment env;
 
     //Vectors for fog parameters: distance, density
     private static Vector2f strongFog = new Vector2f(50, 6.4f);
@@ -88,6 +92,8 @@ public class Game extends SimpleApplication
 
         initCrossHairs();
         initMark();
+        env = Environment.Dungeon;//jest jakas roznica????????
+        audioRenderer.setEnvironment(env);
         initAudio();
         shootables = new Node("Shootables");
         bulletAppState = new BulletAppState();
@@ -195,7 +201,9 @@ public class Game extends SimpleApplication
                 it.remove();
             }
         }
-
+        //listeners audio
+        listener.setLocation(cam.getLocation());
+        listener.setRotation(cam.getRotation());
     }
 
     private void generatePlayer(float locx, float locy, float locz) {
@@ -315,7 +323,7 @@ public class Game extends SimpleApplication
         public void onAction(String name, boolean keyPressed, float tpf) {
             if (!pause) {
                 if (name.equals("Shoot") && !keyPressed) {
-                    audio_gun.playInstance();
+                    audioGun.playInstance();
 
                     CollisionResults results = new CollisionResults();
                     Ray ray = new Ray(cam.getLocation(), cam.getDirection());
@@ -354,10 +362,18 @@ public class Game extends SimpleApplication
 
     private void initAudio() {
         /* gun shot sound is to be triggered by a mouse click. */
-        audio_gun = new AudioNode(assetManager, "Sound/Effects/Gun.wav", AudioData.DataType.Buffer);
-        audio_gun.setPositional(false);
-        audio_gun.setLooping(false);
-        audio_gun.setVolume(2);
-        rootNode.attachChild(audio_gun);
+        audioGun = new AudioNode(assetManager, "Sound/Effects/Gun.wav", AudioData.DataType.Buffer);
+        audioGun.setPositional(false);
+        audioGun.setLooping(false);
+        audioGun.setVolume(2);
+        rootNode.attachChild(audioGun);
+
+        audioAmb = new AudioNode(assetManager, "Sounds/creepy_music.wav", AudioData.DataType.Stream);
+        audioAmb.setLooping(true);  // activate continuous playing
+        audioAmb.setPositional(false);
+        audioAmb.setVolume(0.5f);
+        rootNode.attachChild(audioAmb);
+        audioAmb.play(); // play continuously!
+
     }
 }

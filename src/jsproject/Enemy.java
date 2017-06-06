@@ -9,6 +9,8 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.LoopMode;
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioData;
+import com.jme3.audio.AudioNode;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
@@ -20,7 +22,7 @@ import com.jme3.scene.Node;
 import static java.lang.Math.abs;
 
 public class Enemy {
-    
+
     public Enemy(Node rNode, BulletAppState bulletAppState, AssetManager manager,
                   float locx, float locy, float locz) {
         this.rootNode = rNode;
@@ -28,53 +30,54 @@ public class Enemy {
         this.assetManager = manager;
         health = 100;
         previousState = 0;
-        
+
         this.locx = locx;
         this.locy = locy;
         this.locz = locz;
-        
+
         golem = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
         golem.setLocalScale(0.3f);
         golem.setLocalTranslation(locx, locy, locz);
         lastGoodPosition = golem.getLocalTranslation();
         shape = new CapsuleCollisionShape(0.6f, 0.6f, 1);
         body = new RigidBodyControl(shape, 0);
-        
+
         golem.addControl(body);
-        
+
         bulletAppState.getPhysicsSpace().add(body);
         body.setKinematic(true);
         rootNode.attachChild(golem);
         control = golem.getControl(AnimControl.class);
         golem.setShadowMode(RenderQueue.ShadowMode.Cast);
-        
+
         channel = control.createChannel();
         channel.setAnim("stand");
         channel.setLoopMode(LoopMode.Loop);
         channel.setSpeed(1f);
-        
+
         moveReminder = new Vector3f(0, 0, 0);
-        
+        makeSound();
+
     }
-    
+
     public Vector3f getGolemLocation() {
         updateGolemLocation();
         return new Vector3f(locx, locy, locz);
     }
-    
+
     public void destroyGolem() {
         rootNode.detachChild(golem);
     }
-    
+
     public void updateGolemLocation() {
         locx = golem.getLocalTranslation().x;
         locz = golem.getLocalTranslation().z;
     }
-    
+
     public void getGolemCollision(BoundingBox b) {
         CollisionResults results = new CollisionResults();
         golem.collideWith(b, results);
-        
+
         if (results.size() > 0) {
             // how to react when a collision was detected
 //            CollisionResult closest  = results.getClosestCollision();
@@ -82,13 +85,13 @@ public class Enemy {
 //            System.out.println("Where was it hit? " + closest.getContactPoint() );
 //            System.out.println("Distance? " + closest.getDistance() );
             stepBack();
-            
+
         }
-        
+
     }
-    
+
     public void moveGolem(float playerLocX, float playerLocZ) {
-        
+
         updateGolemLocation();
         if (abs(playerLocX - locx) < 5 || abs(playerLocZ - locz) < 5) {
             if (playerLocX < locx) {
@@ -101,7 +104,7 @@ public class Enemy {
                 golem.move(0, 0, 0);
                 moveReminder.setX(0);
             }
-            
+
             if (playerLocZ < locz) {
                 golem.move(0, 0, -speed);
                 moveReminder.setZ(-speed);
@@ -112,7 +115,7 @@ public class Enemy {
                 golem.move(0, 0, 0);
                 moveReminder.setX(0);
             }
-            
+
             golem.lookAt(new Vector3f(playerLocX, 0, playerLocZ), new Vector3f(0, 1, 0));
             if (!"Walk".equals(channel.getAnimationName())) {
                 channel.setAnim("Walk");
@@ -120,17 +123,31 @@ public class Enemy {
         } else {
             channel.setAnim("stand");
         }
-        
+
     }
-    
+
     public void changeAnim() {
-        
+
     }
-    
+
     public void stepBack() {
         golem.move(-moveReminder.x, 0, -moveReminder.z);
     }
-    
+
+    private void makeSound() {
+        audioGolem = new AudioNode(assetManager, "Sound/Effects/Foot steps.ogg", AudioData.DataType.Buffer);
+        audioGolem.setPositional(true); // Use 3D audio
+        audioGolem.setRefDistance(0.5f); // Distance of 50% volume
+        audioGolem.setMaxDistance(1000f);
+        audioGolem.setInnerAngle(50);
+        audioGolem.setOuterAngle(120);
+        audioGolem.setDirection(new Vector3f(0, 0, 1));
+        audioGolem.setVolume(5); // Default volume
+        audioGolem.setLooping(true); // play continuously
+        golem.attachChild(audioGolem);
+        audioGolem.play(); // play continuously!
+    }
+
     private int health;
     private static float speed = 0.11f;
     private float locx;
@@ -139,17 +156,18 @@ public class Enemy {
     private int previousState;
     private Vector3f moveReminder;
     private Vector3f lastGoodPosition;
-    
+
     private AssetManager assetManager;
     private Node rootNode;
     private BulletAppState bulletAppState;
-    
+
     private Node golem;
     private AnimChannel channel;
     private AnimControl control;
-    
+
     private RigidBodyControl body;
     private CapsuleCollisionShape shape;
     //private Boolean flag=true;
+    private AudioNode audioGolem;
 
 }
