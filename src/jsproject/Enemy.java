@@ -21,6 +21,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Node;
 import static java.lang.Math.abs;
+import java.util.Objects;
 
 public class Enemy {
 
@@ -69,7 +70,6 @@ public class Enemy {
         return new Vector3f(locx, locy, locz);
     }
 
-
     public void updateGolemLocation() {
         locx = golem.getLocalTranslation().x;
         locz = golem.getLocalTranslation().z;
@@ -94,9 +94,9 @@ public class Enemy {
     public void moveGolem(float playerLocX, float playerLocZ) {
 
         updateGolemLocation();
-        System.out.println("nowy");
-        System.out.println(abs(playerLocX - locx));
-        System.out.println(abs(playerLocZ - locz));
+//        System.out.println("nowy");
+//        System.out.println(abs(playerLocX - locx));
+//        System.out.println(abs(playerLocZ - locz));
         if (abs(playerLocX - locx) < 5 && abs(playerLocZ - locz) < 5) {
             audioGolem.play();
             audioFarGolem.stop();
@@ -126,11 +126,11 @@ public class Enemy {
             if (!"Walk".equals(channel.getAnimationName())) {
                 channel.setAnim("Walk");
             }
-        } else if(abs(playerLocX - locx) < 7 && abs(playerLocZ - locz) < 7){
+        } else if (abs(playerLocX - locx) < 7 && abs(playerLocZ - locz) < 7) {
             channel.setAnim("stand");
             audioGolem.stop();
             audioFarGolem.play();
-        }else{
+        } else {
             audioGolem.stop();
             audioFarGolem.stop();
             channel.setAnim("stand");
@@ -159,6 +159,33 @@ public class Enemy {
         audioGolem.setLooping(true); // play continuously
         audioGolem.setReverbEnabled(true);
         golem.attachChild(audioGolem);
+    }
+
+    public void remove() {
+        bulletAppState.getPhysicsSpace().remove(body);
+        rootNode.detachChild(golem);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof Node) {
+            final Node other = (Node) obj;
+            return Objects.equals(this.golem, other);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 13 * hash + Objects.hashCode(this.golem);
+        return hash;
     }
 
     private int health;

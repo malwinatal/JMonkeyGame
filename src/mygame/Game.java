@@ -21,6 +21,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
+import com.jme3.light.PointLight;
 import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -32,12 +33,14 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
+import com.jme3.shadow.PointLightShadowRenderer;
 import com.jme3.shadow.SpotLightShadowRenderer;
 import com.jme3.util.SkyFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import jsproject.Enemy;
 import jsproject.Map;
 import jsproject.ParticleWithTimer;
 
@@ -80,9 +83,9 @@ public class Game extends SimpleApplication
     //Size of Maze. Size of map depends on this value.
     private static int MazeSize = 10;
     private Spatial plModel;
-    
+
     private BitmapText killingCounterText;
-    private int killingCounter=0;
+    private int killingCounter = 0;
 //    private Node plLight;
 
     public static void main(String[] args) {
@@ -93,7 +96,6 @@ public class Game extends SimpleApplication
     @Override
     public void simpleInitApp() {
 
-        initCrossHairs();
         initMark();
         env = Environment.Dungeon;
         audioRenderer.setEnvironment(env);
@@ -114,9 +116,7 @@ public class Game extends SimpleApplication
         rootNode.attachChild(shootables);
 
         particles = Collections.synchronizedList(new ArrayList<ParticleWithTimer>());
-        
-        
-
+        initCrossHairs();
 
     }
 
@@ -256,6 +256,15 @@ public class Game extends SimpleApplication
         SpotLightShadowRenderer slsr = new SpotLightShadowRenderer(assetManager, SHADOWMAP_SIZE);
         slsr.setLight(torch);
         viewPort.addProcessor(slsr);
+
+        PointLight fireLight = new PointLight(new Vector3f(38, -2, 37.5f));
+        fireLight.setColor(ColorRGBA.Red.mult(.8f));
+        fireLight.setRadius(10);
+        rootNode.addLight(fireLight);
+        PointLightShadowRenderer plsr = new PointLightShadowRenderer(assetManager, SHADOWMAP_SIZE);
+        plsr.setLight(fireLight);
+        plsr.setShadowIntensity(0.1f);
+        viewPort.addProcessor(plsr);
     }
 
     private void turnDebugMode(boolean par) {
@@ -347,10 +356,22 @@ public class Game extends SimpleApplication
                         System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
                     }
                     if (results.size() > 0) {
-                        killingCounter=killingCounter+1;
+
                         CollisionResult closest = results.getClosestCollision();
+
+                        Node enem = shootables.getChild(closest.getGeometry().getName()).getParent();
+                        Iterator<Enemy> it = labirynt.ArmyOfEnemies.iterator();
+                        while (it.hasNext()) {
+                            Enemy e = it.next();
+                            if (e.equals(enem)) {
+                                e.remove();
+                                it.remove();
+                                killingCounter = killingCounter + 1;
+                            }
+                        }
+
                         mark.setLocalTranslation(closest.getContactPoint());
-                        shootables.detachChild(shootables.getChild(hit).getParent());
+//                        shootables.detachChild(shootables.getChild(hit).getParent());
                         killingCounterText.setText("Killed golems: " + killingCounter);
                         ParticleWithTimer particle;
                         particle = new ParticleWithTimer(3000, rootNode, assetManager);
@@ -377,8 +398,8 @@ public class Game extends SimpleApplication
         audioGun.setReverbEnabled(true);
         rootNode.attachChild(audioGun);
 
-        audioAmb = new AudioNode(assetManager, "Sounds/creepy_music.wav", 
-                                AudioData.DataType.Stream);
+        audioAmb = new AudioNode(assetManager, "Sounds/creepy_music.wav",
+                      AudioData.DataType.Stream);
         audioAmb.setLooping(true);  // activate continuous playing
         audioAmb.setPositional(false);
         audioAmb.setVolume(0.5f);
@@ -386,8 +407,8 @@ public class Game extends SimpleApplication
         rootNode.attachChild(audioAmb);
         audioAmb.play(); // play continuously!
     }
-    
-    private void initText(){
+
+    private void initText() {
         guiNode.detachAllChildren();
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         killingCounterText = new BitmapText(guiFont, false);

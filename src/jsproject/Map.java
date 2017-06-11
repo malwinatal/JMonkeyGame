@@ -11,14 +11,17 @@ import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
+import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.shadow.PointLightShadowRenderer;
 import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
 import java.awt.Point;
@@ -139,12 +142,12 @@ public class Map {
              */ else {
 
                 if (endP) {
-                    if(numOfSurprises<M.length){
+                    if (numOfSurprises < M.length) {
                         rand_surprise = rand.nextBoolean();
                         M[r][c].gift = rand_surprise;
                         M[r][c].enemy = !rand_surprise;
                         endP = false;
-                        numOfSurprises=numOfSurprises+1;
+                        numOfSurprises = numOfSurprises + 1;
                     }
 
                 }
@@ -165,8 +168,6 @@ public class Map {
     public void buildMap() {
 
         //number of gifts
-       
-
         generateMaze();
 
         /*
@@ -240,14 +241,14 @@ public class Map {
                 //creating gifts and enemies, in randomly choose ends of the maze
                 if (r > 0 || c > 0) {
                     if (M[M[0].length - (1 + r)][c].gift) {
-                            createGift(p.x + 0.5f, 0, p.y + 0.5f);
+                        createGift(p.x + 0.5f, 0, p.y + 0.5f);
 
                     }
                     if (M[M[0].length - (1 + r)][c].enemy) {
 
-                            ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager,
-                                          p.x + 0.5f, 0, p.y + 0.5f));
-                        
+                        ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager,
+                                      p.x + 0.5f, 0, p.y + 0.5f));
+
                     }
 
                 }
@@ -366,8 +367,7 @@ public class Map {
         gift.getGeometry().setMaterial(mat);
         gift.addPhysics(0.2f, 0.2f, 1);
         gift.getGeometry().setShadowMode(RenderQueue.ShadowMode.Cast);
-
-
+        shootables.attachChild(gift.getGeometry());
     }
 
     public void moveGolems(float playerLocX, float playerLocZ) {
@@ -388,8 +388,6 @@ public class Map {
         }
 
     }
-    
-    
 
     private void CreateFire() {
         createObstacle(38, -1.2f, 37.5f, 0.5f, 0.5f, 0.5f, 1);
@@ -434,10 +432,9 @@ public class Map {
         System.out.println(audioFire.getPosition().toString());
         audioFire.play(); // play continuously!
 
-        //TODO dodac swiatlo, zeby bylo pieknie i zmienic dzwiek na ogien
     }
 
-    private List<Enemy> ArmyOfEnemies;
+    public List<Enemy> ArmyOfEnemies;
     private List<MapObject> Wall;
 
     private Cell[][] M;
