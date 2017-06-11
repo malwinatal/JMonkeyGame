@@ -11,6 +11,7 @@ import com.jme3.animation.LoopMode;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
+import com.jme3.audio.LowPassFilter;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
@@ -56,7 +57,10 @@ public class Enemy {
         channel.setSpeed(1f);
 
         moveReminder = new Vector3f(0, 0, 0);
-        makeSound();
+        audioGolem = new AudioNode(assetManager, "Sounds/monster.wav", AudioData.DataType.Buffer);
+        audioFarGolem = new AudioNode(assetManager, "Sounds/farmonster.wav", AudioData.DataType.Buffer);
+        makeSound(audioGolem);
+        makeSound(audioFarGolem);
 
     }
 
@@ -65,9 +69,6 @@ public class Enemy {
         return new Vector3f(locx, locy, locz);
     }
 
-    public void destroyGolem() {
-        rootNode.detachChild(golem);
-    }
 
     public void updateGolemLocation() {
         locx = golem.getLocalTranslation().x;
@@ -93,7 +94,12 @@ public class Enemy {
     public void moveGolem(float playerLocX, float playerLocZ) {
 
         updateGolemLocation();
-        if (abs(playerLocX - locx) < 5 || abs(playerLocZ - locz) < 5) {
+        System.out.println("nowy");
+        System.out.println(abs(playerLocX - locx));
+        System.out.println(abs(playerLocZ - locz));
+        if (abs(playerLocX - locx) < 5 && abs(playerLocZ - locz) < 5) {
+            audioGolem.play();
+            audioFarGolem.stop();
             if (playerLocX < locx) {
                 golem.move(-speed, 0, 0);
                 moveReminder.setX(-speed);
@@ -120,7 +126,13 @@ public class Enemy {
             if (!"Walk".equals(channel.getAnimationName())) {
                 channel.setAnim("Walk");
             }
-        } else {
+        } else if(abs(playerLocX - locx) < 7 && abs(playerLocZ - locz) < 7){
+            channel.setAnim("stand");
+            audioGolem.stop();
+            audioFarGolem.play();
+        }else{
+            audioGolem.stop();
+            audioFarGolem.stop();
             channel.setAnim("stand");
         }
 
@@ -134,8 +146,8 @@ public class Enemy {
         golem.move(-moveReminder.x, 0, -moveReminder.z);
     }
 
-    private void makeSound() {
-        audioGolem = new AudioNode(assetManager, "Sounds/monster.wav", AudioData.DataType.Buffer);
+    private void makeSound(AudioNode audioGolem) {
+        audioGolem.setDryFilter(new LowPassFilter(0f, 0f));
         audioGolem.setPositional(true); // Use 3D audio
         audioGolem.setRefDistance(0.5f); // Distance of 50% volume
         audioGolem.setMaxDistance(1000f);
@@ -147,7 +159,6 @@ public class Enemy {
         audioGolem.setLooping(true); // play continuously
         audioGolem.setReverbEnabled(true);
         golem.attachChild(audioGolem);
-        audioGolem.play(); // play continuously!
     }
 
     private int health;
@@ -171,5 +182,6 @@ public class Enemy {
     private CapsuleCollisionShape shape;
     //private Boolean flag=true;
     private AudioNode audioGolem;
+    private AudioNode audioFarGolem;
 
 }

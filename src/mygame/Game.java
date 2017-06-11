@@ -80,6 +80,9 @@ public class Game extends SimpleApplication
     //Size of Maze. Size of map depends on this value.
     private static int MazeSize = 10;
     private Spatial plModel;
+    
+    private BitmapText killingCounterText;
+    private int killingCounter=0;
 //    private Node plLight;
 
     public static void main(String[] args) {
@@ -95,6 +98,7 @@ public class Game extends SimpleApplication
         env = Environment.Dungeon;
         audioRenderer.setEnvironment(env);
         initAudio();
+        initText();
         shootables = new Node("Shootables");
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
@@ -110,6 +114,9 @@ public class Game extends SimpleApplication
         rootNode.attachChild(shootables);
 
         particles = Collections.synchronizedList(new ArrayList<ParticleWithTimer>());
+        
+        
+
 
     }
 
@@ -340,10 +347,11 @@ public class Game extends SimpleApplication
                         System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
                     }
                     if (results.size() > 0) {
-
+                        killingCounter=killingCounter+1;
                         CollisionResult closest = results.getClosestCollision();
                         mark.setLocalTranslation(closest.getContactPoint());
                         shootables.detachChild(shootables.getChild(hit).getParent());
+                        killingCounterText.setText("Killed golems: " + killingCounter);
                         ParticleWithTimer particle;
                         particle = new ParticleWithTimer(3000, rootNode, assetManager);
                         particles.add(particle);
@@ -369,13 +377,23 @@ public class Game extends SimpleApplication
         audioGun.setReverbEnabled(true);
         rootNode.attachChild(audioGun);
 
-        audioAmb = new AudioNode(assetManager, "Sounds/creepy_music.wav", AudioData.DataType.Stream);
+        audioAmb = new AudioNode(assetManager, "Sounds/creepy_music.wav", 
+                                AudioData.DataType.Stream);
         audioAmb.setLooping(true);  // activate continuous playing
         audioAmb.setPositional(false);
         audioAmb.setVolume(0.5f);
         audioAmb.setReverbEnabled(true);
         rootNode.attachChild(audioAmb);
         audioAmb.play(); // play continuously!
-
+    }
+    
+    private void initText(){
+        guiNode.detachAllChildren();
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        killingCounterText = new BitmapText(guiFont, false);
+        killingCounterText.setSize(guiFont.getCharSet().getRenderedSize());
+        killingCounterText.setText("Killed golems: 0");
+        killingCounterText.setLocalTranslation(200, killingCounterText.getLineHeight(), 0);
+        guiNode.attachChild(killingCounterText);
     }
 }

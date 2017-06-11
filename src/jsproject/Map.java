@@ -55,6 +55,7 @@ public class Map {
         //start points of the maze
         int r = 0;
         int c = 0;
+        int numOfSurprises = 0;
 
         /*Lists of histories in which previous steps of 
         going through the maze are stored*/
@@ -138,10 +139,14 @@ public class Map {
              */ else {
 
                 if (endP) {
-                    rand_surprise = rand.nextBoolean();
-                    M[r][c].gift = rand_surprise;
-                    M[r][c].enemy = !rand_surprise;
-                    endP = false;
+                    if(numOfSurprises<M.length){
+                        rand_surprise = rand.nextBoolean();
+                        M[r][c].gift = rand_surprise;
+                        M[r][c].enemy = !rand_surprise;
+                        endP = false;
+                        numOfSurprises=numOfSurprises+1;
+                    }
+
                 }
 
                 r = (Integer) rows_history.get(rows_history.size() - 1);
@@ -160,7 +165,7 @@ public class Map {
     public void buildMap() {
 
         //number of gifts
-        int numGift = 0;
+       
 
         generateMaze();
 
@@ -235,24 +240,14 @@ public class Map {
                 //creating gifts and enemies, in randomly choose ends of the maze
                 if (r > 0 || c > 0) {
                     if (M[M[0].length - (1 + r)][c].gift) {
-                        if (flag) {
                             createGift(p.x + 0.5f, 0, p.y + 0.5f);
-                            flag = false;
-                        } else {
+
+                    }
+                    if (M[M[0].length - (1 + r)][c].enemy) {
+
                             ArmyOfEnemies.add(new Enemy(shootables, bulletAppState, assetManager,
                                           p.x + 0.5f, 0, p.y + 0.5f));
-                            flag = true;
-                        }
-
-//                    if(M[M[0].length-(1+r)][c].gift ){
-//                        int random = (int )(Math.random() * 3);
-//                        if(random<2){
-//                            createGift(p.x+0.5f, 0, p.y+0.5f);    
-//                         }
-//                       else{
-//                            createEnemy(p.x+0.5f, 0, p.y+0.5f);//then enemy
-//                         }
-//                        //i dont like this idea
+                        
                     }
 
                 }
@@ -372,20 +367,7 @@ public class Map {
         gift.addPhysics(0.2f, 0.2f, 1);
         gift.getGeometry().setShadowMode(RenderQueue.ShadowMode.Cast);
 
-//        Texture dirt = assetManager.loadTexture(
-//                      "Textures/Terrain/Pond/Pond.jpg");
-//        mat.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg"));
-//        mat.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/grass.jpg"));
-//        dirt.setWrap(Texture.WrapMode.Repeat);
-//        mat.setTexture("DiffuseMap", dirt);
-//        mat.setColor("Ambient", ColorRGBA.Green);
-//        sphereGeo.setMaterial(sphereMat);
-//        rootNode.attachChild(sphereGeo);
-//        Sphere sphereMesh = new Sphere(32, 32, 1f);
-//        Geometry sphereGeo = new Geometry("Colored lit sphere", sphereMesh);
-//        Material sphereMat = new Material(assetManager,
-//                      "Common/MatDefs/Light/Lighting.j3md");
-//        gift.addMatText(mat, dirt);
+
     }
 
     public void moveGolems(float playerLocX, float playerLocZ) {
@@ -406,6 +388,8 @@ public class Map {
         }
 
     }
+    
+    
 
     private void CreateFire() {
         createObstacle(38, -1.2f, 37.5f, 0.5f, 0.5f, 0.5f, 1);
