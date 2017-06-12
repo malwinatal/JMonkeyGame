@@ -86,7 +86,9 @@ public class Game extends SimpleApplication
 
     private BitmapText killingCounterText;
     private int killingCounter = 0;
-//    private Node plLight;
+    private BitmapText ammoCounterText;
+    private int ammoCounter = 10;
+    private BitmapText gameOverText;
 
     public static void main(String[] args) {
         Game app = new Game();
@@ -198,6 +200,14 @@ public class Game extends SimpleApplication
             torch.setPosition(loc.add(new Vector3f(.9f * (float) (Math.sin(angle)), .3f, .9f * (float) (Math.cos(angle)))));
             torch.setDirection(dir);
             labirynt.moveGolems(player.getPhysicsLocation().x, player.getPhysicsLocation().z);
+
+            killingCounterText.setText("Killed golems: " + killingCounter);
+            ammoCounterText.setText("Ammo: " + ammoCounter);
+
+            if (ammoCounter == 0) {
+                guiNode.attachChild(gameOverText);
+                guiNode.detachChild(ch);
+            }
         }
 
         Iterator<ParticleWithTimer> it = particles.iterator();
@@ -338,8 +348,10 @@ public class Game extends SimpleApplication
         @Override
         public void onAction(String name, boolean keyPressed, float tpf) {
             if (!pause) {
-                if (name.equals("Shoot") && !keyPressed) {
+
+                if (name.equals("Shoot") && !keyPressed && ammoCounter > 0) {
                     audioGun.playInstance();
+                    ammoCounter = ammoCounter - 1;
 
                     CollisionResults results = new CollisionResults();
                     Ray ray = new Ray(cam.getLocation(), cam.getDirection());
@@ -358,6 +370,7 @@ public class Game extends SimpleApplication
                     if (results.size() > 0) {
 
                         CollisionResult closest = results.getClosestCollision();
+                        ammoCounter = ammoCounter + 11;
 
                         Node enem = shootables.getChild(closest.getGeometry().getName()).getParent();
                         Iterator<Enemy> it = labirynt.ArmyOfEnemies.iterator();
@@ -372,7 +385,7 @@ public class Game extends SimpleApplication
 
                         mark.setLocalTranslation(closest.getContactPoint());
 //                        shootables.detachChild(shootables.getChild(hit).getParent());
-                        killingCounterText.setText("Killed golems: " + killingCounter);
+
                         ParticleWithTimer particle;
                         particle = new ParticleWithTimer(3000, rootNode, assetManager);
                         particles.add(particle);
@@ -411,10 +424,24 @@ public class Game extends SimpleApplication
     private void initText() {
         guiNode.detachAllChildren();
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+
         killingCounterText = new BitmapText(guiFont, false);
         killingCounterText.setSize(guiFont.getCharSet().getRenderedSize());
-        killingCounterText.setText("Killed golems: 0");
-        killingCounterText.setLocalTranslation(200, killingCounterText.getLineHeight(), 0);
+//        killingCounterText.setText("Killed golems: 0");
+        killingCounterText.setLocalTranslation(350, killingCounterText.getLineHeight(), 0);
         guiNode.attachChild(killingCounterText);
+
+        ammoCounterText = new BitmapText(guiFont, false);
+        ammoCounterText.setSize(guiFont.getCharSet().getRenderedSize());
+//        ammoCounterText.setText("Ammo: " + ammoCounter);
+        ammoCounterText.setLocalTranslation(500, ammoCounterText.getLineHeight(), 0);
+        guiNode.attachChild(ammoCounterText);
+
+        gameOverText = new BitmapText(guiFont, false);
+        gameOverText.setSize(30);
+        gameOverText.setText("Out of ammo\nGAME OVER");
+        gameOverText.setColor(ColorRGBA.Red);
+        gameOverText.setLocalTranslation(420, 420, 0);
+//        guiNode.attachChild(gameOverText);
     }
 }
