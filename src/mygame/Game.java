@@ -412,18 +412,19 @@ public class Game extends SimpleApplication
     private void initAudio() {
         /* gun shot sound is to be triggered by a mouse click. */
         audioGun = new AudioNode(assetManager, "Sound/Effects/Gun.wav", AudioData.DataType.Buffer);
-        audioGun.setPositional(false);
+        audioGun.setPositional(true);
+        audioGun.setLocalTranslation(cam.getLocation());
+        audioGun.setReverbEnabled(true);
         audioGun.setLooping(false);
         audioGun.setVolume(2);
-        audioGun.setReverbEnabled(true);
         rootNode.attachChild(audioGun);
 
         audioAmb = new AudioNode(assetManager, "Sounds/creepy_music.wav",
                       AudioData.DataType.Stream);
         audioAmb.setLooping(true);  // activate continuous playing
         audioAmb.setPositional(false);
+        audioAmb.setDirectional(false);
         audioAmb.setVolume(0.5f);
-        audioAmb.setReverbEnabled(true);
         rootNode.attachChild(audioAmb);
         audioAmb.play(); // play continuously!
     }
