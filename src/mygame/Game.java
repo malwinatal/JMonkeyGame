@@ -89,6 +89,7 @@ public class Game extends SimpleApplication
     private BitmapText ammoCounterText;
     private int ammoCounter = 10;
     private BitmapText gameOverText;
+    private BitmapText winWinText;
 
     public static void main(String[] args) {
         Game app = new Game();
@@ -208,6 +209,12 @@ public class Game extends SimpleApplication
                 guiNode.attachChild(gameOverText);
                 guiNode.detachChild(ch);
             }
+
+            if (labirynt.ArmyOfEnemies.isEmpty()) {
+                guiNode.attachChild(winWinText);
+                guiNode.detachChild(ch);
+            }
+//            System.out.println(labirynt.ArmyOfEnemies.size());
         }
 
         Iterator<ParticleWithTimer> it = particles.iterator();
@@ -443,5 +450,12 @@ public class Game extends SimpleApplication
         gameOverText.setColor(ColorRGBA.Red);
         gameOverText.setLocalTranslation(420, 420, 0);
 //        guiNode.attachChild(gameOverText);
+
+        winWinText = new BitmapText(guiFont, false);
+        winWinText.setSize(30);
+        winWinText.setText("Golems are dead\n        WIN WIN");
+        winWinText.setColor(ColorRGBA.Blue);
+        winWinText.setLocalTranslation(410, 410, 0);
+
     }
 }
