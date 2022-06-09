@@ -1,5 +1,5 @@
-# JMonkeyGame
-A 3D game developed in jMonkey engine 3.1 as a university project for Games and Simulations.
+# 3D Game
+A 3D game developed in jMonkey Engine 3.1 as a university project for Games and Simulations.
 
 ### The game includes:
 
